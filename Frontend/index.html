@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StudXchange — Student Marketplace</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Lora:ital,wght@0,600;0,700;1,600&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style/index.css">
+</head>
+
+<body>
+
+  <!-- ══ NAV ══════════════════════════════════════════════════════ -->
+  <nav class="nav" id="navbar">
+    <a href="index.html" class="nav-logo">
+      <div class="nav-logo-icon">S</div>
+      <div class="nav-logo-text">
+        <b>StudXchange</b>
+        <small>Academic Marketplace</small>
+      </div>
+    </a>
+
+    <div class="nav-links">
+      <a href="marketplace.html" class="nl">🛍 Marketplace</a>
+      <a href="rentpage.html" class="nl">🔄 Rent</a>
+      <a href="committee.html" class="nl">🏛 Committee</a>
+    </div>
+
+    <div class="nav-r">
+      <a href="Login.html" class="btn-ghost">Sign In</a>
+      <a href="Login.html#register" class="btn-main">Join Free ✨</a>
+    </div>
+
+    <!-- Hamburger (mobile) -->
+    <div class="hamburger" id="hamburger" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </div>
+  </nav>
+
+  <!-- Mobile menu -->
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="marketplace.html">🛍 Marketplace <span style="margin-left:auto;font-size:11px;color:var(--tx3)">Browse
+        freely →</span></a>
+    <a href="rentpage.html">🔄 Rent & Borrow <span style="margin-left:auto;font-size:11px;color:var(--tx3)">Browse
+        freely →</span></a>
+    <a href="committee.html">🏛 Committee Hub</a>
+    <div class="mm-div"></div>
+    <a href="Login.html">👤 Sign In</a>
+    <a href="Login.html" class="mm-primary">✨ Join Free — Create Account</a>
+  </div>
+
+  <!-- ══ HERO ══════════════════════════════════════════════════════ -->
+  <section class="hero">
+    <div class="hero-bg">
+      <div class="hb1"></div>
+      <div class="hb2"></div>
+      <div class="hb3"></div>
+      <div class="particle p1">📚</div>
+      <div class="particle p2">💻</div>
+      <div class="particle p3">🚲</div>
+      <div class="particle p4">🪑</div>
+      <div class="particle p5">📱</div>
+      <div class="particle p6">🎒</div>
+    </div>
+
+    <div class="hero-inner">
+      <!-- Left: Text -->
+      <div class="hero-left">
+        <div class="hero-badge">
+          <div class="badge-dot"></div>
+          Built for VCET Students
+        </div>
+
+        <h1 class="hero-title">
+          Trade smarter,<br>
+          <em>study better.</em>
+        </h1>
+
+        <p class="hero-sub">
+          The student marketplace built exclusively for VCET. Buy, sell, rent, and borrow — all within your campus
+          community. No middlemen. No strangers.
+        </p>
+
+        <div class="hero-actions">
+          <a href="Login.html" class="hero-btn-primary">
+            ✨ Join Free
+          </a>
+          <a href="marketplace.html" class="hero-btn-secondary">
+            Browse Marketplace →
+          </a>
+        </div>
+
+        <div class="hero-stats">
+          <div class="hstat">
+            <span class="hstat-num">100%</span>
+            <span class="hstat-lbl">Student Community</span>
+          </div>
+          <div class="hstat-div"></div>
+          <div class="hstat">
+            <span class="hstat-num">Free</span>
+            <span class="hstat-lbl">Always Free to Use</span>
+          </div>
+          <div class="hstat-div"></div>
+          <div class="hstat">
+            <span class="hstat-num">3</span>
+            <span class="hstat-lbl">Sections to Explore</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Feature cards -->
+      <div class="hero-cards">
+        <a href="marketplace.html" class="hero-card">
+          <div class="hc-icon">🛍️</div>
+          <div class="hc-body">
+            <div class="hc-title">Marketplace</div>
+            <div class="hc-sub">Buy &amp; sell textbooks, gadgets, furniture and more</div>
+          </div>
+          <span class="hc-arrow">→</span>
+        </a>
+
+        <a href="rentpage.html" class="hero-card teal">
+          <div class="hc-icon">🔄</div>
+          <div class="hc-body">
+            <div class="hc-title">Rent &amp; Borrow</div>
+            <div class="hc-sub">Daily rentals — bikes, calculators, laptops &amp; more</div>
+          </div>
+          <span class="hc-arrow">→</span>
+        </a>
+
+        <a href="committee.html" class="hero-card amber">
+          <div class="hc-icon">🏛️</div>
+          <div class="hc-body">
+            <div class="hc-title">Committee Hub</div>
+            <div class="hc-sub">Events, clubs, announcements &amp; campus news</div>
+          </div>
+          <span class="hc-arrow">→</span>
+        </a>
+
+        <div class="no-login-note">
+          <span>👀</span>
+          Browse marketplace &amp; rentals freely — no login needed to explore!
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ HOW IT WORKS ══════════════════════════════════════════════ -->
+  <section class="how">
+    <div class="sec-inner">
+      <div class="sec-label reveal">How It Works</div>
+      <h2 class="sec-title reveal reveal-d1">Three steps to get started</h2>
+      <p class="sec-sub reveal reveal-d2">StudXchange is designed to be effortless. No complicated setup — just sign up
+        and start trading with your classmates.</p>
+
+      <div class="steps">
+        <div class="step reveal reveal-d1">
+          <div class="step-num">1</div>
+          <div>
+            <div class="step-icon">🎓</div>
+            <div class="step-title">Create your account</div>
+            <div class="step-desc">Sign up with your VCET email in under a minute. It's completely free — no hidden
+              charges, ever.</div>
+          </div>
+        </div>
+        <div class="step reveal reveal-d2">
+          <div class="step-num">2</div>
+          <div>
+            <div class="step-icon">🔍</div>
+            <div class="step-title">Browse or list</div>
+            <div class="step-desc">Explore hundreds of listings from fellow students. Or post your own item for sale or
+              rent in seconds.</div>
+          </div>
+        </div>
+        <div class="step reveal reveal-d3">
+          <div class="step-num">3</div>
+          <div>
+            <div class="step-icon">💬</div>
+            <div class="step-title">Chat &amp; deal</div>
+            <div class="step-desc">Use our built-in chat to connect directly with buyers or sellers. Meet on campus,
+              exchange, done!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ FEATURES ══════════════════════════════════════════════════ -->
+  <section class="features-bg">
+    <div class="sec-inner">
+      <div class="sec-label reveal">Why StudXchange</div>
+      <h2 class="sec-title reveal reveal-d1">Built different, for students</h2>
+      <p class="sec-sub reveal reveal-d2">We know what students actually need — so we built exactly that, nothing more,
+        nothing less.</p>
+
+      <div class="features-grid">
+        <div class="feat-card reveal reveal-d1">
+          <div class="feat-icon">🔒</div>
+          <div class="feat-title">VCET-Only Community</div>
+          <div class="feat-desc">Every user is a verified VCET student. No random strangers — just your campus
+            community.</div>
+        </div>
+        <div class="feat-card reveal reveal-d2">
+          <div class="feat-icon">💬</div>
+          <div class="feat-title">Built-in Chat</div>
+          <div class="feat-desc">Real-time messaging with buyers and sellers. No sharing phone numbers until you're
+            ready.</div>
+        </div>
+        <div class="feat-card reveal reveal-d3">
+          <div class="feat-icon">🔄</div>
+          <div class="feat-title">Rent &amp; Borrow</div>
+          <div class="feat-desc">Don't buy what you'll use once. Rent a bike, calculator, or laptop for just a few days.
+          </div>
+        </div>
+        <div class="feat-card reveal">
+          <div class="feat-icon">🏛️</div>
+          <div class="feat-title">Committee Hub</div>
+          <div class="feat-desc">Join clubs, track events, and stay updated with campus announcements — all in one
+            place.</div>
+        </div>
+        <div class="feat-card reveal reveal-d1">
+          <div class="feat-icon">💸</div>
+          <div class="feat-title">Always Free</div>
+          <div class="feat-desc">No commissions, no listing fees, no premium plans. StudXchange will always be free for
+            students.</div>
+        </div>
+        <div class="feat-card reveal reveal-d2">
+          <div class="feat-icon">📱</div>
+          <div class="feat-title">Works on Any Device</div>
+          <div class="feat-desc">Fully responsive — browse on your phone between lectures or on your laptop in the
+            hostel.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ EXPLORE SECTION ═══════════════════════════════════════════ -->
+  <section class="explore">
+    <div class="sec-inner">
+      <div class="sec-label reveal">Explore Now</div>
+      <h2 class="sec-title reveal reveal-d1">No account needed to browse</h2>
+      <p class="sec-sub reveal reveal-d2">Jump right in — explore the marketplace and rentals freely. You only need an
+        account when you're ready to buy, sell, or chat.</p>
+
+      <div class="explore-grid">
+        <a href="marketplace.html" class="exp-card reveal reveal-d1">
+          <div class="exp-icon">🛍️</div>
+          <span class="exp-badge">Browse Free</span>
+          <h3 class="exp-title">Marketplace</h3>
+          <p class="exp-desc">Textbooks, laptops, electronics, bikes, furniture — find everything students sell at
+            student prices.</p>
+          <div class="free-tag">✅ No login required to browse</div>
+          <div class="exp-cta">
+            Explore Marketplace <span class="exp-cta-arrow">→</span>
+          </div>
+        </a>
+
+        <a href="rentpage.html" class="exp-card teal reveal reveal-d2">
+          <div class="exp-icon">🔄</div>
+          <span class="exp-badge">Browse Free</span>
+          <h3 class="exp-title">Rent &amp; Borrow</h3>
+          <p class="exp-desc">Need something for a week? Rent it. Have something unused? List it and earn. Daily rates
+            from fellow students.</p>
+          <div class="free-tag">✅ No login required to browse</div>
+          <div class="exp-cta">
+            Explore Rentals <span class="exp-cta-arrow">→</span>
+          </div>
+        </a>
+
+        <a href="committee.html" class="exp-card amber reveal reveal-d3">
+          <div class="exp-icon">🏛️</div>
+          <span class="exp-badge">Campus Life</span>
+          <h3 class="exp-title">Committee Hub</h3>
+          <p class="exp-desc">Events, clubs, announcements. Join committees, participate in college life, and never miss
+            what's happening.</p>
+          <div class="free-tag" style="background:rgba(217,119,6,.1);color:#92400E;border-color:rgba(217,119,6,.2)">🔐
+            Login to join committees</div>
+          <div class="exp-cta">
+            Explore Hub <span class="exp-cta-arrow">→</span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ CTA BAND ══════════════════════════════════════════════════ -->
+  <div class="cta-band">
+    <div class="cta-inner">
+      <span class="cta-emoji">🚀</span>
+      <h2 class="cta-title">Ready to join your campus marketplace?</h2>
+      <p class="cta-sub">Create your free account in under a minute. Your entire campus community is already waiting.
+      </p>
+      <div class="cta-actions">
+        <a href="Login.html" class="cta-btn-primary">✨ Create Free Account</a>
+        <a href="marketplace.html" class="cta-btn-secondary">👀 Browse First</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ FOOTER ════════════════════════════════════════════════════ -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <b>StudXchange</b>
+        <p>The academic marketplace built exclusively for VCET students. Buy, sell, rent, and connect with your campus
+          community.</p>
+        <span class="footer-tag">© 2026 StudXchange</span>
+      </div>
+      <div class="footer-col">
+        <h4>Explore</h4>
+        <a href="marketplace.html">Marketplace</a>
+        <a href="rentpage.html">Rent &amp; Borrow</a>
+        <a href="committee.html">Committee Hub</a>
+        <a href="chat.html">Messages</a>
+      </div>
+      <div class="footer-col">
+        <h4>Account</h4>
+        <a href="Login.html">Sign In</a>
+        <a href="Login.html">Create Account</a>
+        <a href="myprofile.html">My Profile</a>
+        <a href="Adminlogin.html">Admin Portal</a>
+      </div>
+      <div class="footer-col">
+        <h4>Categories</h4>
+        <a href="marketplace.html">📚 Books &amp; Notes</a>
+        <a href="marketplace.html">💻 Laptops</a>
+        <a href="marketplace.html">🚲 Bikes</a>
+        <a href="marketplace.html">🪑 Furniture</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>Built with ❤️ for VCET students</span>
+      <span>Free to use · No ads · No hidden fees</span>
+    </div>
+  </footer>
+
+  <script src="script/index.js"></script>
+</body>
+
+</html>

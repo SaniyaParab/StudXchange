@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rent & Borrow — StudXchange</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Lora:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style/rentpage.css">
+<style>
+/* ── Account dropdown (matches marketplace nav style) ── */
+.nav-r { margin-left:auto; display:flex; gap:9px; align-items:center; }
+.profile-btn {
+  display:flex; align-items:center; gap:8px;
+  padding:6px 12px; border-radius:10px;
+  background:var(--bg2); border:1.5px solid var(--bor);
+  cursor:pointer; font-family:'Sora',sans-serif; font-size:13px;
+  font-weight:600; color:var(--br); transition:.18s; position:relative;
+}
+.profile-btn:hover { background:var(--bg3); }
+.profile-avatar {
+  width:28px; height:28px; border-radius:50%;
+  background:linear-gradient(135deg,var(--brl,#C9A27A),var(--br));
+  color:#fff; font-size:13px; font-weight:800;
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+}
+.profile-dropdown {
+  position:absolute; top:calc(100% + 8px); right:0;
+  background:#fff; border:1.5px solid var(--bor);
+  border-radius:14px; width:220px;
+  box-shadow:0 12px 36px rgba(123,75,42,.14);
+  z-index:300; display:none; overflow:hidden;
+  animation:dropIn .18s ease;
+}
+@keyframes dropIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.profile-dropdown.open { display:block; }
+.drop-header {
+  padding:14px 16px; background:var(--bg2);
+  border-bottom:1px solid var(--bor);
+}
+.drop-name  { font-size:14px; font-weight:800; color:var(--tx); }
+.drop-email { font-size:11px; color:var(--tx3); margin-top:2px; }
+.drop-item  {
+  display:flex; align-items:center; gap:9px;
+  padding:11px 16px; font-size:13px; font-weight:600;
+  color:var(--tx2); text-decoration:none; cursor:pointer;
+  transition:.15s; border-bottom:1px solid var(--bg2);
+}
+.drop-item:last-child { border-bottom:none; }
+.drop-item:hover { background:var(--bg2); color:var(--br); }
+.drop-item.danger { color:#B83232; }
+.drop-item.danger:hover { background:#FDEAEA; }
+.drop-signin { padding:18px; text-align:center; }
+.drop-signin p { font-size:12px; color:var(--tx3); margin-bottom:12px; }
+.sign-in-btn { width:100%; padding:9px; background:var(--br); color:#fff; border:none; border-radius:8px; font-size:13px; font-weight:700; font-family:'Sora',sans-serif; cursor:pointer; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="marketplace.html" class="nav-logo">
+    <div class="nav-logo-icon">S</div>
+    <div>
+      <b>StudXchange</b>
+      <small>Academic Marketplace</small>
+    </div>
+  </a>
+  <div class="nav-r">
+    <a href="marketplace.html" class="nbtn">← Marketplace</a>
+    <button class="nbtn teal" onclick="goPostRent()">+ List for Rent</button>
+    <!-- Account Button -->
+    <div style="position:relative">
+      <button class="profile-btn" id="profileBtn" onclick="toggleDrop()">
+        <div class="profile-avatar" id="profileAvatar">?</div>
+        <span id="profileLabel">Account</span>
+        <span style="font-size:10px;opacity:.7">▾</span>
+      </button>
+      <div class="profile-dropdown" id="profileDropdown">
+        <!-- signed-out state -->
+        <div id="dropSignedOut" class="drop-signin">
+          <p>Sign in to save items and list rentals.</p>
+          <button class="sign-in-btn" onclick="location.href='Login.html'">Sign In</button>
+        </div>
+        <!-- signed-in state -->
+        <div id="dropSignedIn" style="display:none">
+          <div class="drop-header">
+            <div class="drop-name"  id="dropName">—</div>
+            <div class="drop-email" id="dropEmail">—</div>
+          </div>
+          <a class="drop-item" href="myprofile.html">👤 My Profile</a>
+          <a class="drop-item" href="myprofile.html">📦 My Listings</a>
+          <a class="drop-item" href="chat.html">💬 Chats</a>
+          <span class="drop-item danger" onclick="signOut()">🚪 Sign Out</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="rent-hero">
+  <div class="hero-particles">
+    <span class="p p1">📚</span>
+    <span class="p p2">💻</span>
+    <span class="p p3">🚲</span>
+    <span class="p p4">🪑</span>
+  </div>
+  <div class="rent-hero-badge">🔄 Rent & Borrow</div>
+  <h1>Rent from Students</h1>
+  <p>Borrow what you need, rent out what you have — save money together</p>
+  <div class="hero-stats">
+    <div class="stat"><span id="statCount">—</span><small>Listings</small></div>
+    <div class="stat-div"></div>
+    <div class="stat"><span>100%</span><small>Student-to-Student</small></div>
+  </div>
+</div>
+
+<div class="rent-filter">
+  <div class="search-box">
+    <span>🔍</span>
+    <input type="text" id="searchInput" placeholder="Search rent listings…" oninput="filterItems()">
+  </div>
+  <button class="fchip on" onclick="setFilter('all',this)">✨ All</button>
+  <button class="fchip" onclick="setFilter('Books',this)">📚 Books</button>
+  <button class="fchip" onclick="setFilter('Laptops',this)">💻 Laptops</button>
+  <button class="fchip" onclick="setFilter('Electronics',this)">📱 Electronics</button>
+  <button class="fchip" onclick="setFilter('Bikes',this)">🚲 Bikes</button>
+  <button class="fchip" onclick="setFilter('Furniture',this)">🪑 Furniture</button>
+  <button class="fchip" onclick="setFilter('Other',this)">🎒 Other</button>
+</div>
+
+<div id="rentGrid" class="rent-grid"></div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-ov" id="rentModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box" id="rentModalBox">
+    <div class="modal-header">
+      <button class="close-x" onclick="closeModal()">×</button>
+    </div>
+    <div id="rentModalContent"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SERVER = "http://localhost:5000";
+const user   = JSON.parse(localStorage.getItem("user"));
+let allItems  = [];
+let activeFilter = "all";
+
+// ── Nav account setup ─────────────────────────────────────────────────────────
+function setupNav() {
+  const btn   = document.getElementById("profileBtn");
+  const avDiv = document.getElementById("profileAvatar");
+  const lbl   = document.getElementById("profileLabel");
+  const out   = document.getElementById("dropSignedOut");
+  const inn   = document.getElementById("dropSignedIn");
+
+  if (user) {
+    const initials = (user.name || "?").trim().split(/\s+/).map(w => w[0]).join("").toUpperCase().slice(0,2);
+    avDiv.textContent = initials;
+    lbl.textContent   = user.name.split(" ")[0];
+    out.style.display = "none";
+    inn.style.display = "block";
+    document.getElementById("dropName").textContent  = user.name;
+    document.getElementById("dropEmail").textContent = user.email;
+  } else {
+    avDiv.textContent = "?";
+    lbl.textContent   = "Account";
+  }
+}
+
+function toggleDrop() {
+  document.getElementById("profileDropdown").classList.toggle("open");
+}
+
+// Close dropdown on outside click
+document.addEventListener("click", e => {
+  const btn  = document.getElementById("profileBtn");
+  const drop = document.getElementById("profileDropdown");
+  if (!btn.contains(e.target) && !drop.contains(e.target)) {
+    drop.classList.remove("open");
+  }
+});
+
+function signOut() {
+  localStorage.removeItem("user");
+  window.location.href = "Login.html";
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2800);
+}
+
+function goPostRent() {
+  if (!user) { toast("Please sign in to list a rental"); setTimeout(() => location.href="Login.html", 1500); return; }
+  location.href = "rent.html";
+}
+
+function setFilter(cat, el) {
+  activeFilter = cat;
+  document.querySelectorAll(".fchip").forEach(c => c.classList.remove("on"));
+  el.classList.add("on");
+  filterItems();
+}
+
+function filterItems() {
+  const q = (document.getElementById("searchInput").value || "").toLowerCase();
+  let list = allItems;
+  if (activeFilter !== "all") list = list.filter(i => i.category === activeFilter);
+  if (q) list = list.filter(i => i.title.toLowerCase().includes(q) || (i.description||'').toLowerCase().includes(q));
+  renderGrid(list);
+}
+
+// ── Load from server ──────────────────────────────────────────────────────────
+async function loadRentals() {
+  const grid = document.getElementById("rentGrid");
+  grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--tx3)"><div style="font-size:32px;margin-bottom:10px;animation:float 2s infinite ease-in-out">🔄</div><p>Loading rentals…</p></div>`;
+  try {
+    const res  = await fetch(`${SERVER}/rent-products`);
+    allItems   = await res.json();
+    const sc = document.getElementById("statCount");
+    if (sc) sc.textContent = allItems.length;
+    renderGrid(allItems);
+  } catch {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="ei">⚠️</div><h4>Could not connect</h4><p>Make sure your server is running with <b>node server.js</b></p></div>`;
+  }
+}
+
+function renderGrid(list) {
+  const grid = document.getElementById("rentGrid");
+  if (!list.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="ei">🔄</div><h4>No rentals yet</h4><p>Be the first to list something for rent!</p></div>`;
+    return;
+  }
+  grid.innerHTML = list.map((item, i) => `
+    <div class="rent-card" style="animation-delay:${i*0.05}s" onclick="openDetail(${item.id})">
+      <div class="rent-img">
+        ${item.image ? `<img src="${item.image}" alt="${item.title}" loading="lazy" onerror="this.style.display='none'">` : "🔄"}
+        <span class="rent-badge">RENT</span>
+        <span class="rent-avail ${item.is_available ? 'avail-yes' : 'avail-no'}">
+          ${item.is_available ? '✅ Available' : '❌ Rented'}
+        </span>
+      </div>
+      <div class="rent-body">
+        <div class="rent-title">${item.title}</div>
+        <div class="rent-price-row">
+          ${item.rent_per_day ? `<span class="rent-price rent-price-day">₹${item.rent_per_day}/day</span>` : ""}
+        </div>
+        <div class="rent-meta">🏷 ${item.category} • 💰 Deposit: ₹${item.deposit || 0}<br>👤 ${item.seller_name}</div>
+        <div class="rent-footer" onclick="event.stopPropagation()">
+          <button class="btn-rent" onclick="openDetail(${item.id})">View & Rent</button>
+         <button 
+  onclick="addRentToWishlist(event, ${item.id})"
+  style="
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: 1px solid #e2d3c3;
+    background: #fff7ed;
+    color: #7B4B2A;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  "
+  onmouseover="this.style.background='#7B4B2A'; this.style.color='#fff'; this.style.transform='scale(1.05)'"
+  onmouseout="this.style.background='#fff7ed'; this.style.color='#7B4B2A'; this.style.transform='scale(1)'"
+>
+  ♡ Wishlist
+</button>
+        </div>
+      </div>
+    </div>`).join("");
+}
+
+async function openDetail(id) {
+  const modal = document.getElementById("rentModal");
+  modal.classList.add("on");
+  document.body.style.overflow = "hidden";
+  const item = allItems.find(i => i.id === id);
+  if (!item) return;
+  const isOwn = user && user.id === item.seller_id;
+
+  document.getElementById("rentModalContent").innerHTML = `
+    <div class="modal-img">
+      ${item.image ? `<img src="${item.image}" alt="${item.title}" onerror="this.style.display='none'">` : "🔄"}
+    </div>
+    <div class="modal-content">
+      <div class="modal-title">${item.title}</div>
+      <div class="modal-seller">👤 Listed by <b>${item.seller_name}</b> &nbsp;•&nbsp; 🏷 ${item.category}</div>
+      <div class="price-boxes">
+        ${item.rent_per_day ? `<div class="price-box teal">
+          <div class="price-box-lbl">Per Day</div>
+          <div class="price-box-val">₹${item.rent_per_day}</div>
+          <div class="price-box-sub">Daily rate</div>
+        </div>` : ""}
+        ${item.deposit ? `<div class="price-box">
+          <div class="price-box-lbl">Security Deposit</div>
+          <div class="price-box-val" style="color:var(--br)">₹${item.deposit}</div>
+          <div class="price-box-sub">Refundable</div>
+        </div>` : ""}
+      </div>
+      <div class="modal-section">
+        <h4>Description</h4>
+        <p>${item.description || "No description provided."}</p>
+      </div>
+      <div class="modal-section">
+        <h4>Item Details</h4>
+        <div class="modal-info-grid">
+          <div class="info-item"><div class="info-item-lbl">Availability</div><div class="info-item-val">${item.is_available ? "✅ Available" : "❌ Rented Out"}</div></div>
+          <div class="info-item"><div class="info-item-lbl">Category</div><div class="info-item-val">🏷 ${item.category}</div></div>
+          <div class="info-item"><div class="info-item-lbl">Contact</div><div class="info-item-val">📞 ${item.contact || "—"}</div></div>
+          <div class="info-item"><div class="info-item-lbl">Listed By</div><div class="info-item-val">👤 ${item.seller_name}</div></div>
+        </div>
+      </div>
+      ${isOwn
+        ? `<p style="text-align:center;color:var(--tx3);font-size:13px;padding:16px;background:var(--bg);border-radius:12px">This is your listing.</p>`
+        : !item.is_available
+        ? `<p style="text-align:center;padding:16px;background:#fee2e2;border-radius:12px;color:#991b1b;font-size:13px;font-weight:600">❌ This item is currently rented out</p>`
+        : `<div class="rent-form">
+            <h4>🗓️ Request to Rent</h4>
+            <div class="fg-row">
+              <div class="fg"><label>Start Date</label><input type="date" id="rd-start" onchange="calcCost(${item.rent_per_day||0})" min="${new Date().toISOString().split('T')[0]}"></div>
+              <div class="fg"><label>End Date</label><input type="date" id="rd-end" onchange="calcCost(${item.rent_per_day||0})" min="${new Date().toISOString().split('T')[0]}"></div>
+            </div>
+            <div class="cost-preview" id="costPreview" style="display:none">
+              <span class="cost-preview-lbl">Estimated Cost</span>
+              <span class="cost-preview-val" id="costVal">₹0</span>
+            </div>
+            <div class="fg"><label>Message to Owner (optional)</label><textarea id="rd-msg" rows="2" placeholder="e.g. I need this for a college project…"></textarea></div>
+            <button class="btn-rent" style="width:100%;margin-top:4px" onclick="sendRentRequest(${item.id},${item.seller_id},${item.rent_per_day||0})">
+              🔄 Send Rent Request
+            </button>
+          </div>`
+      }
+    </div>`;
+}
+
+function calcCost(perDay) {
+  const s = document.getElementById("rd-start")?.value;
+  const e = document.getElementById("rd-end")?.value;
+  const preview = document.getElementById("costPreview");
+  if (!s || !e || !preview) return;
+  const days = Math.max(1, Math.ceil((new Date(e) - new Date(s)) / 86400000));
+  document.getElementById("costVal").textContent = `₹${days*perDay} (${days} day${days>1?'s':''})`;
+  preview.style.display = "flex";
+}
+
+async function sendRentRequest(productId, ownerId, perDay) {
+  if (!user) { toast("Please sign in first"); setTimeout(() => location.href="Login.html",1500); return; }
+  const start = document.getElementById("rd-start").value;
+  const end   = document.getElementById("rd-end").value;
+  const msg   = document.getElementById("rd-msg")?.value?.trim()||"";
+  if (!start || !end) { toast("Please select start and end dates"); return; }
+  if (new Date(end) <= new Date(start)) { toast("End date must be after start date"); return; }
+  const days  = Math.ceil((new Date(end) - new Date(start)) / 86400000);
+  const total = days * perDay;
+  try {
+    const res  = await fetch(`${SERVER}/send-rent-request`, {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ renter_id:user.id, owner_id:ownerId, product_id:productId, start_date:start, end_date:end, total_cost:total, message:msg })
+    });
+    const data = await res.json();
+    if (data.success) { toast("Rent request sent! ✅"); closeModal(); }
+    else toast(data.error || "Could not send request");
+  } catch { toast("Server error"); }
+}
+
+function addWishlist(e, itemId) {
+  e.stopPropagation();
+  if (!user) { toast("Sign in to save to wishlist"); setTimeout(()=>location.href="Login.html",1500); return; }
+  fetch(`${SERVER}/add-to-wishlist`, {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({ user_id:user.id, item_id:itemId, item_type:"rent" })
+  }).then(r=>r.json()).then(d => {
+    if (d.success) {
+      toast("Saved to wishlist ❤️");
+      const btn = document.getElementById(`wish-${itemId}`);
+      if (btn) { btn.textContent = "❤️"; btn.style.background = "#ffe4e4"; }
+    } else {
+      toast(d.message || d.error || "Already in wishlist");
+    }
+  }).catch(() => toast("Could not save"));
+}
+
+function closeModal() {
+  document.getElementById("rentModal").classList.remove("on");
+  document.body.style.overflow = "";
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+setupNav();
+loadRentals();
+
+function addRentToWishlist(e, rentId) {
+  e.stopPropagation();
+
+  if (!user) {
+    toast("Please sign in first");
+    setTimeout(() => location.href = "Login.html", 1500);
+    return;
+  }
+
+  fetch(`${SERVER}/wishlist`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      user_id: user.id,
+      item_id: rentId,
+      item_type: "rent"
+    })
+  })
+    .then(r => r.json())
+    .then(d => toast(d.success ? "Added to wishlist ❤️" : "Already in wishlist"))
+    .catch(() => toast("Wishlist failed"));
+}
+</script> 
+
+
+</body>
+</html>

@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Committee Hub — StudXchange</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Lora:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style/committee.css">
+</head>
+<body>
+
+<!-- APP SHELL -->
+<div id="appShell">
+
+<!-- NAV -->
+<nav class="nav">
+  <a href="marketplace.html" class="nav-logo">
+    <div class="nav-logo-icon">S</div>
+    <div><b>StudXchange</b><small>Academic Marketplace</small></div>
+  </a>
+  <div class="nav-links">
+    <a href="marketplace.html" class="nl">🛍️ Marketplace</a>
+    <a href="rentpage.html"    class="nl">🔄 Rent</a>
+    <a href="committee.html"   class="nl active">🏛️ Hub</a>
+  </div>
+  <div class="nav-r">
+    <span class="nav-user" id="navUser"></span>
+    <button class="switch-role-btn" id="switchBtn" onclick="switchRole()">↩ Switch to Admin</button>
+    <button class="btn btn-g btn-sm" onclick="location.href='myprofile.html'">My Profile</button>
+    <button class="btn btn-out btn-sm" onclick="signOut()">Sign Out</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-cont">
+    <div class="hero-badge">🏛️ Official College Hub</div>
+    <h1>Committee Hub</h1>
+    <p>Join clubs, attend events, collaborate — your college life, organized.</p>
+    <div class="hero-stats">
+      <div class="hs"><span class="hs-num" id="hComm">0</span><span class="hs-lbl">Committees</span></div>
+      <div class="hs"><span class="hs-num" id="hEv">0</span><span class="hs-lbl">Events</span></div>
+    </div>
+  </div>
+  <div class="hero-orbs">
+    <div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div>
+  </div>
+</div>
+
+<!-- ADMIN BAR -->
+<div id="adminBar" class="admin-bar" style="display:none">
+  <div class="admin-bar-left">
+    <span>⚙️ Admin Mode Active</span>
+    <span class="admin-name-badge" id="adminNameBadge"></span>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <button class="btn-adm" onclick="openModal('crtCommModal')">+ Committee</button>
+    <button class="btn-adm" onclick="openCreateEvent()">+ Event</button>
+    <button class="btn-adm" onclick="openCreateAnn()">+ Announcement</button>
+    <button class="btn-adm-out" onclick="openAdminRequests()">📋 Requests <span id="reqCountBadge" style="display:none;background:var(--rd);color:#fff;font-size:10px;padding:1px 6px;border-radius:99px;margin-left:4px"></span></button>
+  </div>
+</div>
+
+<!-- LAYOUT -->
+<div class="hub">
+  <aside class="sb">
+    <div class="sb-card">
+      <div class="sb-hd">Navigation</div>
+      <button class="sb-btn on" onclick="goView('feed',this)">📰 Activity Feed</button>
+      <button class="sb-btn" onclick="goView('committees',this)">🏛️ Committees</button>
+      <button class="sb-btn" onclick="goView('events',this)">📅 Events</button>
+      <button class="sb-btn" onclick="goView('mygroups',this)">🔒 My Groups</button>
+      <button class="sb-btn" onclick="goView('notifications',this)">
+        🔔 Notifications <span class="nb" id="notifBadge" style="display:none"></span>
+      </button>
+    </div>
+    <div class="sb-card">
+      <div class="sb-hd">My Committees</div>
+      <div id="sideCommList"><div class="sb-empty">No memberships yet</div></div>
+    </div>
+  </aside>
+
+  <main>
+    <!-- FEED -->
+    <div class="view on" id="view-feed">
+      <div class="view-hd"><h2>Activity Feed</h2><p>Latest announcements and events from all committees</p></div>
+      <div id="feedContainer" class="feed-list"></div>
+    </div>
+    <!-- COMMITTEES -->
+    <div class="view" id="view-committees">
+      <div class="view-hd"><h2>All Committees</h2><p>Explore and join your college committees</p></div>
+      <div class="search-bar">
+        <div class="sb-input"><span>🔍</span><input id="commSearch" placeholder="Search committees…" oninput="filterComms()"></div>
+        <select id="catFilter" onchange="filterComms()">
+          <option value="">All Categories</option>
+          <option>Technical</option><option>Cultural</option><option>Sports</option>
+          <option>Social Service</option><option>Arts</option><option>Other</option>
+        </select>
+      </div>
+      <div class="comm-grid" id="commGrid"></div>
+    </div>
+    <!-- EVENTS -->
+    <div class="view" id="view-events">
+      <div class="view-hd"><h2>Upcoming Events</h2><p>Register for events organized by committees</p></div>
+      <div class="ev-grid" id="evGrid"></div>
+    </div>
+    <!-- MY GROUPS -->
+    <div class="view" id="view-mygroups">
+      <div class="view-hd"><h2>My Private Groups</h2><p>Collaborate with your committee members</p></div>
+      <div id="myGroupsCont"></div>
+    </div>
+    <!-- NOTIFICATIONS -->
+    <div class="view" id="view-notifications">
+      <div class="view-hd"><h2>Notifications</h2><p>Your alerts and updates</p></div>
+      <div id="notifList"></div>
+    </div>
+  </main>
+</div>
+
+<!-- ═════ MODALS ═════ -->
+<!-- Create Committee -->
+<div class="modal-ov" id="crtCommModal">
+  <div class="modal">
+    <div class="modal-hd"><h3>Create Committee</h3><button class="mod-x" onclick="closeModal('crtCommModal')">×</button></div>
+    <div class="modal-body">
+      <div class="fg"><label>Name</label><input id="cName" placeholder="e.g. Coding Club"></div>
+      <div class="fg"><label>Description</label><textarea id="cDesc" rows="3" placeholder="What does this committee do?"></textarea></div>
+      <div class="fg"><label>Category</label>
+        <select id="cCat"><option>Technical</option><option>Cultural</option><option>Sports</option><option>Social Service</option><option>Arts</option><option>Other</option></select>
+      </div>
+      <div class="fg"><label>Emoji Icon</label><input id="cIcon" placeholder="🎭" maxlength="4" value="🏛️"></div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-g" onclick="closeModal('crtCommModal')">Cancel</button>
+      <button class="btn btn-p" onclick="createCommittee()">Create</button>
+    </div>
+  </div>
+</div>
+
+<!-- Create Event -->
+<div class="modal-ov" id="crtEvModal">
+  <div class="modal">
+    <div class="modal-hd"><h3>Create Event</h3><button class="mod-x" onclick="closeModal('crtEvModal')">×</button></div>
+    <div class="modal-body">
+      <div class="fg"><label>Event Title</label><input id="evTitle" placeholder="e.g. Hackathon 2026"></div>
+      <div class="fg"><label>Committee</label><select id="evComm"></select></div>
+      <div class="fg"><label>Description</label><textarea id="evDesc" rows="3"></textarea></div>
+      <div class="fg"><label>Date & Time</label><input type="datetime-local" id="evDate"></div>
+      <div class="fg"><label>Venue</label><input id="evVenue" placeholder="e.g. Seminar Hall A"></div>
+      <div class="fg"><label>Max Participants (0 = unlimited)</label><input type="number" id="evMax" value="0" min="0"></div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-g" onclick="closeModal('crtEvModal')">Cancel</button>
+      <button class="btn btn-p" onclick="createEventHandler()">Create Event</button>
+    </div>
+  </div>
+</div>
+
+<!-- Create Announcement -->
+<div class="modal-ov" id="crtAnnModal">
+  <div class="modal">
+    <div class="modal-hd"><h3>Post Announcement</h3><button class="mod-x" onclick="closeModal('crtAnnModal')">×</button></div>
+    <div class="modal-body">
+      <div class="fg"><label>Committee</label><select id="annComm"></select></div>
+      <div class="fg"><label>Title</label><input id="annTitle" placeholder="e.g. Meeting this Friday"></div>
+      <div class="fg"><label>Message</label><textarea id="annBody" rows="4"></textarea></div>
+      <div class="fg"><label>Priority</label>
+        <select id="annType">
+          <option value="info">ℹ️ Info</option>
+          <option value="important">⚠️ Important</option>
+          <option value="event">📅 Event Related</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-g" onclick="closeModal('crtAnnModal')">Cancel</button>
+      <button class="btn btn-p" onclick="createAnnouncement()">Post</button>
+    </div>
+  </div>
+</div>
+
+<!-- Committee Detail -->
+<div class="modal-ov" id="commModal">
+  <div class="modal modal-wide">
+    <div class="modal-hd">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span id="cmIcon" class="cm-icon-big"></span>
+        <div><h3 id="cmName" style="margin:0"></h3><span id="cmCat" class="cat-pill"></span></div>
+      </div>
+      <button class="mod-x" onclick="closeModal('commModal')">×</button>
+    </div>
+    <div class="modal-body" style="padding-top:0">
+      <div class="cm-tabs">
+        <button class="cm-tab on" onclick="cmTab('about',this)">About</button>
+        <button class="cm-tab" onclick="cmTab('announcements',this)">Announcements</button>
+        <button class="cm-tab" onclick="cmTab('events',this)">Events</button>
+        <button class="cm-tab" id="cmChatTab" onclick="cmTab('chat',this)" style="display:none">🔒 Group Chat</button>
+        <button class="cm-tab" id="cmMembTab" onclick="cmTab('members',this)" style="display:none">Members</button>
+      </div>
+      <div class="cm-panel on" id="cmp-about">
+        <div class="cm-stats">
+          <div class="cm-stat"><span id="cmMembers">—</span><small>Members</small></div>
+          <div class="cm-stat"><span id="cmEvents">—</span><small>Events</small></div>
+          <div class="cm-stat"><span id="cmPosts">—</span><small>Posts</small></div>
+        </div>
+        <p id="cmDesc" style="font-size:14px;line-height:1.7;color:var(--tx2);margin-bottom:16px"></p>
+        <div id="cmJoinArea"></div>
+      </div>
+      <div class="cm-panel" id="cmp-announcements"><div id="cmAnnList"></div></div>
+      <div class="cm-panel" id="cmp-events"><div id="cmEvList"></div></div>
+      <div class="cm-panel" id="cmp-chat">
+        <div class="chat-box" id="cmChatBox"></div>
+        <div class="chat-row">
+          <input id="cmChatInput" placeholder="Message the group…" onkeydown="if(event.key==='Enter')sendGroupMsg()">
+          <button class="btn btn-p btn-sm" onclick="sendGroupMsg()">Send ➤</button>
+        </div>
+      </div>
+      <div class="cm-panel" id="cmp-members">
+        <div id="cmMemberList"></div>
+        <div id="cmPendingSection"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Event Detail -->
+<div class="modal-ov" id="evModal">
+  <div class="modal">
+    <div class="modal-hd"><h3 id="evmTitle"></h3><button class="mod-x" onclick="closeModal('evModal')">×</button></div>
+    <div class="modal-body">
+      <div class="ev-detail-row"><span>📅</span><span id="evmDate"></span></div>
+      <div class="ev-detail-row"><span>📍</span><span id="evmVenue"></span></div>
+      <div class="ev-detail-row"><span>🏛️</span><span id="evmComm"></span></div>
+      <div class="ev-detail-row"><span>👥</span><span id="evmCount"></span></div>
+      <p id="evmDesc" style="margin:14px 0;font-size:13px;line-height:1.75;color:var(--tx2)"></p>
+      <div id="evmRsvpArea"></div>
+      <div id="evmAdminArea"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Admin Requests -->
+<div class="modal-ov" id="adminReqModal">
+  <div class="modal modal-wide">
+    <div class="modal-hd"><h3>Manage Join Requests</h3><button class="mod-x" onclick="closeModal('adminReqModal')">×</button></div>
+    <div class="modal-body"><div id="adminReqList"></div></div>
+  </div>
+</div>
+
+<!-- Confirm Delete -->
+<div class="modal-ov" id="confirmModal">
+  <div class="modal confirm-modal">
+    <div class="modal-hd"><h3>Confirm Delete</h3><button class="mod-x" onclick="closeModal('confirmModal')">×</button></div>
+    <div class="confirm-body" id="confirmText"></div>
+    <div class="modal-ft" style="margin-top:16px">
+      <button class="btn btn-g" onclick="closeModal('confirmModal')">Cancel</button>
+      <button class="btn btn-out" id="confirmOkBtn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+</div>
+
+<script>
+const SERVER = "http://localhost:5000";
+
+// ── Auth check ────────────────────────────────────────────────────────────────
+const user = JSON.parse(localStorage.getItem("user"));
+if (!user) { alert("Please login first"); location.href = "Login.html"; }
+
+let userIsAdmin = !!(user && user.isAdmin);
+let allComms    = [];
+let allEvents   = [];
+let activeCmId  = null;
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+function toast(msg) {
+  const t = $("toast"); t.textContent = msg; t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2500);
+}
+function timeAgo(iso) {
+  const d = (Date.now() - new Date(iso)) / 1000;
+  if (d < 60) return "just now"; if (d < 3600) return Math.floor(d/60) + "m ago";
+  if (d < 86400) return Math.floor(d/3600) + "h ago"; return Math.floor(d/86400) + "d ago";
+}
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString("en-IN",{weekday:"short",day:"numeric",month:"short",year:"numeric"}) + " at " + d.toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"});
+}
+function openModal(id)  { $(id).classList.add("open"); }
+function closeModal(id) { $(id).classList.remove("open"); }
+document.querySelectorAll(".modal-ov").forEach(ov => ov.addEventListener("click", e => { if(e.target===ov) ov.classList.remove("open"); }));
+
+function confirmDelete(text, onOk) {
+  $("confirmText").textContent = text;
+  const btn = $("confirmOkBtn");
+  btn.onclick = () => { closeModal("confirmModal"); onOk(); };
+  openModal("confirmModal");
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+function setupUI() {
+  // Nav user label
+  $("navUser").textContent = "Hi, " + user.name.split(" ")[0] + (userIsAdmin ? " ⚙️" : " 🎓");
+
+  // Switch button text
+  if (userIsAdmin) {
+    $("switchBtn").textContent = "↩ Switch to Student";
+    $("adminBar").style.display = "flex";
+    $("adminNameBadge").textContent = "Admin: " + user.name;
+    // Load pending count for badge
+    loadPendingCount();
+  } else {
+    $("switchBtn").textContent = "↩ Switch to Admin";
+    $("adminBar").style.display = "none";
+  }
+}
+
+function switchRole() {
+  if (userIsAdmin) {
+    // Already admin, switch back to student mode
+    // Remove isAdmin flag and re-save
+    const studentUser = { ...user };
+    delete studentUser.isAdmin;
+    // Actually log out admin and go to student login
+    localStorage.removeItem("user");
+    location.href = "Login.html";
+  } else {
+    // Go to admin login
+    location.href = "Adminlogin.html";
+  }
+}
+
+function signOut() { localStorage.removeItem("user"); location.href = "Login.html"; }
+
+async function loadPendingCount() {
+  try {
+    const r = await fetch(`${SERVER}/committee-requests/pending`);
+    const rows = await r.json();
+    const badge = $("reqCountBadge");
+    if (rows.length > 0) { badge.textContent = rows.length; badge.style.display = "inline"; }
+    else badge.style.display = "none";
+  } catch {}
+}
+
+// ── Stats ─────────────────────────────────────────────────────────────────────
+async function loadStats() {
+  try {
+    const [cr, er] = await Promise.all([fetch(`${SERVER}/committees`), fetch(`${SERVER}/committee-events`)]);
+    const comms = await cr.json(); const events = await er.json();
+    animNum("hComm", comms.length); animNum("hEv", events.length);
+  } catch {}
+}
+function animNum(id, target) {
+  let n = 0; const s = Math.ceil(target / 30);
+  const t = setInterval(() => { n = Math.min(n+s, target); $(id).textContent = n; if(n>=target)clearInterval(t); }, 40);
+}
+
+// ── Views ─────────────────────────────────────────────────────────────────────
+function goView(id, el) {
+  document.querySelectorAll(".view").forEach(v => v.classList.remove("on"));
+  document.querySelectorAll(".sb-btn").forEach(b => b.classList.remove("on"));
+  $("view-"+id).classList.add("on"); el.classList.add("on");
+  if(id==="feed")          loadFeed();
+  if(id==="committees")    loadComms();
+  if(id==="events")        loadEvents();
+  if(id==="mygroups")      loadMyGroups();
+  if(id==="notifications") loadNotifications();
+}
+
+// ── Side committee list ───────────────────────────────────────────────────────
+async function loadSideComms() {
+  try {
+    const r = await fetch(`${SERVER}/my-committees/${user.id}`);
+    const data = await r.json();
+    const el = $("sideCommList");
+    if (!data.length) { el.innerHTML = `<div class="sb-empty">No memberships yet</div>`; return; }
+    el.innerHTML = data.map(c => `<div class="sb-comm-item" onclick="openCommittee(${c.id})">${c.icon} ${c.name}</div>`).join("");
+  } catch {}
+}
+
+// ── FEED ──────────────────────────────────────────────────────────────────────
+async function loadFeed() {
+  const el = $("feedContainer");
+  try {
+    const [ar, er] = await Promise.all([fetch(`${SERVER}/announcements`), fetch(`${SERVER}/committee-events`)]);
+    const anns = await ar.json(); const events = await er.json();
+    let items = [
+      ...anns.map(a => ({...a, _type:"ann", _time:a.created_at})),
+      ...events.map(e => ({...e, _type:"ev", _time:e.event_date}))
+    ].sort((a,b) => new Date(b._time) - new Date(a._time));
+
+    if (!items.length) { el.innerHTML = `<div class="empty"><div class="ei">📰</div><h4>No activity yet</h4><p>Posts from committees will appear here.</p></div>`; return; }
+    el.innerHTML = items.map(item => {
+      if (item._type === "ann") {
+        const bc = item.type==="important"?"fb-important":item.type==="event"?"fb-event":"fb-info";
+        const delBtn = userIsAdmin ? `<button class="feed-del" onclick="event.stopPropagation();deleteAnnouncement(${item.id})">🗑 Delete</button>` : "";
+        return `<div class="feed-card">
+          ${delBtn}
+          <div class="feed-icon">${item.committee_icon||"🏛️"}</div>
+          <div class="feed-body">
+            <div class="feed-meta">📢 ${item.committee_name} · ${timeAgo(item.created_at)}</div>
+            <div class="feed-title">${item.title}</div>
+            <div class="feed-text">${item.body}</div>
+            <span class="feed-badge ${bc}">${item.type==="important"?"⚠️ Important":item.type==="event"?"📅 Event":"ℹ️ Info"}</span>
+          </div></div>`;
+      } else {
+        const delBtn = userIsAdmin ? `<button class="feed-del" onclick="event.stopPropagation();deleteEvent(${item.id})">🗑 Delete</button>` : "";
+        return `<div class="feed-card clickable" onclick="openEvent(${item.id})">
+          ${delBtn}
+          <div class="feed-icon">${item.committee_icon||"📅"}</div>
+          <div class="feed-body">
+            <div class="feed-meta">📅 ${item.committee_name} · ${fmtDate(item.event_date)}</div>
+            <div class="feed-title">${item.title}</div>
+            <div class="feed-text">${item.description}</div>
+            <div class="feed-text" style="margin-top:4px;font-size:12px">📍 ${item.venue||"TBA"}</div>
+            <span class="feed-badge fb-announcement">🎉 Event</span>
+          </div></div>`;
+      }
+    }).join("");
+  } catch { el.innerHTML = `<div class="empty"><div class="ei">⚠️</div><h4>Could not load feed</h4><p>Make sure the server is running.</p></div>`; }
+}
+
+// ── COMMITTEES ────────────────────────────────────────────────────────────────
+async function loadComms() {
+  try {
+    const r = await fetch(`${SERVER}/committees`);
+    allComms = await r.json();
+    filterComms();
+  } catch {}
+}
+
+function filterComms() {
+  const q = ($("commSearch")?.value || "").toLowerCase();
+  const cat = $("catFilter")?.value || "";
+  const f = allComms.filter(c => (!q || c.name.toLowerCase().includes(q) || (c.description||"").toLowerCase().includes(q)) && (!cat || c.category===cat));
+  renderCommGrid(f);
+}
+
+function renderCommGrid(comms) {
+  const el = $("commGrid");
+  if (!comms.length) { el.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="ei">🔍</div><h4>No results</h4></div>`; return; }
+  el.innerHTML = comms.map((c, i) => {
+    const delBtn = userIsAdmin ? `<button class="admin-del" onclick="event.stopPropagation();deleteCommittee(${c.id},'${c.name}')">🗑</button>` : "";
+    return `<div class="comm-card" style="animation-delay:${i*0.04}s">
+      <div class="comm-banner">${c.icon||"🏛️"}${delBtn}</div>
+      <div class="comm-body">
+        <div class="comm-name">${c.name}</div>
+        <div class="comm-cat">${c.category}</div>
+        <div class="comm-desc">${c.description||""}</div>
+      </div>
+      <div class="comm-footer">
+        <span class="comm-members">👥 ${c.member_count||0} members</span>
+        <button class="btn btn-g btn-sm" onclick="openCommittee(${c.id})">View →</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+// ── EVENTS ────────────────────────────────────────────────────────────────────
+async function loadEvents() {
+  try {
+    const r = await fetch(`${SERVER}/committee-events`);
+    allEvents = await r.json();
+    renderEventGrid(allEvents);
+  } catch {}
+}
+
+function renderEventGrid(events) {
+  const el = $("evGrid");
+  if (!events.length) { el.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="ei">📅</div><h4>No events yet</h4></div>`; return; }
+  el.innerHTML = events.map((e, i) => {
+    const d = new Date(e.event_date);
+    const pct = e.max_participants ? Math.round(((e.registered_count||0)/e.max_participants)*100) : 0;
+    const delBtn = userIsAdmin ? `<button class="ev-admin-del" onclick="event.stopPropagation();deleteEvent(${e.id})">🗑 Delete</button>` : "";
+    return `<div class="ev-card" style="animation-delay:${i*0.04}s" onclick="openEvent(${e.id})">
+      ${delBtn}
+      <div class="ev-top">
+        <div class="ev-date-chip">📅 ${d.toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"})}</div>
+        <div class="ev-card-title">${e.title}</div>
+        <div class="ev-card-comm">${e.committee_icon||"🏛️"} ${e.committee_name}</div>
+      </div>
+      <div class="ev-body2">
+        <div class="ev-row"><span>📍</span><span>${e.venue||"TBA"}</span></div>
+        <div class="ev-row"><span>🕐</span><span>${d.toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"})}</span></div>
+        ${e.max_participants ? `<div class="ev-prog-bar"><div class="ev-prog-fill" style="width:${Math.min(pct,100)}%"></div></div><div class="ev-prog-txt">${e.registered_count||0}/${e.max_participants} registered</div>` : `<div class="ev-row"><span>👥</span><span>${e.registered_count||0} registered</span></div>`}
+      </div>
+    </div>`;
+  }).join("");
+}
+
+// ── EVENT DETAIL ──────────────────────────────────────────────────────────────
+async function openEvent(id) {
+  // Refresh events if needed
+  if (!allEvents.length) { const r = await fetch(`${SERVER}/committee-events`); allEvents = await r.json(); }
+  const e = allEvents.find(e => e.id === id);
+  if (!e) return;
+  $("evmTitle").textContent = e.title;
+  $("evmDate").textContent = fmtDate(e.event_date);
+  $("evmVenue").textContent = e.venue || "TBA";
+  $("evmComm").textContent = (e.committee_icon||"🏛️") + " " + e.committee_name;
+  $("evmDesc").textContent = e.description || "";
+  const cnt = e.registered_count || 0;
+  $("evmCount").textContent = e.max_participants ? `${cnt}/${e.max_participants} (${Math.round(cnt/e.max_participants*100)}% full)` : `${cnt} registered`;
+
+  const rsvpEl = $("evmRsvpArea");
+  const admEl = $("evmAdminArea");
+  admEl.innerHTML = "";
+  if (userIsAdmin) {
+    rsvpEl.innerHTML = `<div style="font-size:13px;color:var(--br);font-weight:600;padding:10px 0">⚙️ Admin view — ${cnt} registrations</div>`;
+    admEl.innerHTML = `<button class="btn btn-out" style="width:100%;margin-top:8px" onclick="deleteEvent(${id});closeModal('evModal')">🗑️ Delete This Event</button>`;
+  } else {
+    try {
+      const rr = await fetch(`${SERVER}/committee-events/${id}/rsvp/${user.id}`);
+      const rd = await rr.json();
+      if (rd.rsvped) {
+        rsvpEl.innerHTML = `<button class="btn-rsvp done" disabled>✅ You're Registered</button>`;
+      } else if (e.max_participants > 0 && cnt >= e.max_participants) {
+        rsvpEl.innerHTML = `<button class="btn-rsvp" disabled>Event Full</button>`;
+      } else {
+        rsvpEl.innerHTML = `<button class="btn-rsvp" onclick="rsvpEvent(${id})">Register for Event →</button>`;
+      }
+    } catch { rsvpEl.innerHTML = `<button class="btn-rsvp" onclick="rsvpEvent(${id})">Register for Event →</button>`; }
+  }
+  openModal("evModal");
+}
+
+async function rsvpEvent(id) {
+  try {
+    const r = await fetch(`${SERVER}/committee-events/${id}/rsvp`, {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({user_id:user.id})});
+    const d = await r.json();
+    if (d.success) { toast("Registered! 🎉"); closeModal("evModal"); loadEvents(); }
+    else toast(d.error || "Could not register");
+  } catch { toast("Server error"); }
+}
+
+// ── COMMITTEE DETAIL ──────────────────────────────────────────────────────────
+async function openCommittee(id) {
+  activeCmId = id;
+  if (!allComms.length) { const r = await fetch(`${SERVER}/committees`); allComms = await r.json(); }
+  const c = allComms.find(c => c.id === id);
+  if (!c) return;
+
+  $("cmIcon").textContent = c.icon || "🏛️";
+  $("cmName").textContent = c.name;
+  $("cmCat").textContent  = c.category;
+  $("cmDesc").textContent = c.description || "";
+  $("cmMembers").textContent = c.member_count || 0;
+  $("cmEvents").textContent  = c.event_count || 0;
+  $("cmPosts").textContent   = c.post_count || 0;
+
+  let myStatus = "none";
+  if (!userIsAdmin) {
+    try { const r = await fetch(`${SERVER}/committees/${id}/membership/${user.id}`); const d = await r.json(); myStatus = d.status; } catch {}
+  }
+
+  const joinEl = $("cmJoinArea");
+  if (userIsAdmin) {
+    joinEl.innerHTML = `<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <span style="color:var(--br);font-weight:700;font-size:14px">⚙️ Managing as Admin</span>
+      <button class="btn btn-out btn-sm" onclick="deleteCommittee(${id},'${c.name}')">🗑️ Delete Committee</button>
+    </div>`;
+  }
+  else if (myStatus==="approved") joinEl.innerHTML = `<span style="color:var(--gr);font-weight:700;font-size:14px">✅ You are a member</span>`;
+  else if (myStatus==="pending")  joinEl.innerHTML = `<span style="color:var(--am);font-weight:700;font-size:14px">⏳ Join request pending</span>`;
+  else if (myStatus==="rejected") joinEl.innerHTML = `<span style="color:var(--rd);font-weight:700;font-size:14px">❌ Request was rejected</span>`;
+  else joinEl.innerHTML = `<button class="btn btn-p" onclick="requestJoin(${id})">Request to Join</button>`;
+
+  const showPriv = myStatus==="approved" || userIsAdmin;
+  $("cmChatTab").style.display = showPriv ? "inline-block" : "none";
+  $("cmMembTab").style.display = showPriv ? "inline-block" : "none";
+
+  document.querySelectorAll(".cm-tab").forEach(t => t.classList.remove("on"));
+  document.querySelectorAll(".cm-panel").forEach(p => p.classList.remove("on"));
+  document.querySelector(".cm-tab").classList.add("on");
+  $("cmp-about").classList.add("on");
+  openModal("commModal");
+}
+
+function cmTab(panel, el) {
+  document.querySelectorAll(".cm-tab").forEach(t => t.classList.remove("on"));
+  document.querySelectorAll(".cm-panel").forEach(p => p.classList.remove("on"));
+  el.classList.add("on"); $("cmp-"+panel).classList.add("on");
+  if (panel==="announcements") loadCmAnns(activeCmId);
+  if (panel==="events")        loadCmEvents(activeCmId);
+  if (panel==="chat")          loadGroupChat(activeCmId);
+  if (panel==="members")       loadMembers(activeCmId);
+}
+
+async function requestJoin(id) {
+  try {
+    const r = await fetch(`${SERVER}/committees/${id}/join`, {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({user_id:user.id})});
+    const d = await r.json();
+    if (d.success) { toast("Join request sent! ⏳"); openCommittee(id); loadSideComms(); }
+    else toast(d.error || "Could not send request");
+  } catch { toast("Server error"); }
+}
+
+async function loadCmAnns(id) {
+  try {
+    const r = await fetch(`${SERVER}/announcements`);
+    const all = await r.json();
+    const anns = all.filter(a => a.committee_id === id);
+    const el = $("cmAnnList");
+    if (!anns.length) { el.innerHTML = `<div class="empty"><div class="ei">📢</div><h4>No announcements yet</h4></div>`; return; }
+    el.innerHTML = anns.map(a => {
+      const delBtn = userIsAdmin ? `<button class="ann-del" onclick="deleteAnnouncement(${a.id})">🗑</button>` : "";
+      return `<div class="ann-item">
+        ${delBtn}
+        <span class="ann-badge ${a.type}">${a.type==="important"?"⚠️ Important":a.type==="event"?"📅 Event":"ℹ️ Info"}</span>
+        <div class="ann-title">${a.title}</div>
+        <div class="ann-body">${a.body}</div>
+        <div class="ann-time">Posted ${timeAgo(a.created_at)}</div>
+      </div>`;
+    }).join("");
+  } catch {}
+}
+
+async function loadCmEvents(id) {
+  try {
+    const r = await fetch(`${SERVER}/committee-events`);
+    const all = await r.json();
+    const evs = all.filter(e => e.committee_id === id);
+    const el = $("cmEvList");
+    if (!evs.length) { el.innerHTML = `<div class="empty"><div class="ei">📅</div><h4>No events yet</h4></div>`; return; }
+    el.innerHTML = evs.map(e => `<div style="background:var(--bg2);border:1px solid var(--bor);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer" onclick="closeModal('commModal');openEvent(${e.id})">
+      <div style="font-weight:700;font-size:15px;margin-bottom:4px">${e.title}</div>
+      <div style="font-size:12px;color:var(--tx3)">📅 ${fmtDate(e.event_date)} · 📍 ${e.venue||"TBA"}</div>
+    </div>`).join("");
+  } catch {}
+}
+
+async function loadGroupChat(id) {
+  try {
+    const r = await fetch(`${SERVER}/committees/${id}/messages`);
+    const msgs = await r.json();
+    const el = $("cmChatBox");
+    if (!msgs.length) { el.innerHTML = `<div style="text-align:center;color:var(--tx3);font-size:13px;padding:40px">No messages yet. Say hello! 👋</div>`; return; }
+    el.innerHTML = msgs.map(m => {
+      const mine = m.sender_id === user.id;
+      return `<div class="msg ${mine?"mine":"theirs"}">
+        ${!mine ? `<div class="msg-sender">${m.sender_name}</div>` : ""}
+        ${m.message}
+        <div class="msg-time">${timeAgo(m.sent_at)}</div>
+      </div>`;
+    }).join("");
+    el.scrollTop = el.scrollHeight;
+  } catch {}
+}
+
+async function sendGroupMsg() {
+  const input = $("cmChatInput");
+  const text = input.value.trim();
+  if (!text || !activeCmId) return;
+  input.value = "";
+  try {
+    await fetch(`${SERVER}/committees/${activeCmId}/messages`, {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sender_id:user.id,message:text})});
+    loadGroupChat(activeCmId);
+  } catch { toast("Could not send message"); }
+}
+
+// ── MY GROUPS ─────────────────────────────────────────────────────────────────
+async function loadMyGroups() {
+  const el = $("myGroupsCont");
+  try {
+    const r = await fetch(`${SERVER}/my-committees/${user.id}`);
+    const comms = await r.json();
+    if (!comms.length) { el.innerHTML = `<div class="empty"><div class="ei">🔒</div><h4>No private groups yet</h4><p>Join a committee to access its group chat.</p></div>`; return; }
+    el.innerHTML = comms.map(c => `<div class="group-card">
+      <div class="group-hd">
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="font-size:28px">${c.icon||"🏛️"}</span>
+          <div><h4 style="font-size:15px;font-weight:800">${c.name}</h4><small style="color:var(--tx3)">${c.category}</small></div>
+        </div>
+        <button class="btn btn-p btn-sm" onclick="openCommToChat(${c.id})">Open Chat →</button>
+      </div>
+    </div>`).join("");
+  } catch { el.innerHTML = `<div class="empty"><div class="ei">⚠️</div><h4>Could not load groups</h4></div>`; }
+}
+
+async function openCommToChat(id) {
+  if (!allComms.length) { const r = await fetch(`${SERVER}/committees`); allComms = await r.json(); }
+  openCommittee(id);
+  setTimeout(() => { const t = $("cmChatTab"); if(t) t.click(); }, 200);
+}
+
+// ── MEMBERS ───────────────────────────────────────────────────────────────────
+async function loadMembers(id) {
+  try {
+    const r = await fetch(`${SERVER}/committees/${id}/members`);
+    const rows = await r.json();
+    const approved = rows.filter(m => m.status==="approved");
+    const pending  = rows.filter(m => m.status==="pending");
+
+    let html = `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--tx3);margin-bottom:12px">Members (${approved.length})</div>`;
+    if (!approved.length) html += `<p style="color:var(--tx3);font-size:13px">No approved members yet.</p>`;
+    else html += approved.map(m => {
+      const removeBtn = userIsAdmin ? `<button class="btn-reject2" style="margin-left:8px" onclick="memberAction(${id},${m.user_id},'reject')">Remove</button>` : "";
+      return `<div class="member-row">
+        <div class="member-av">${(m.user_name||"?")[0].toUpperCase()}</div>
+        <div style="flex:1"><div class="member-name">${m.user_name}</div><div class="member-email">${m.user_email}</div></div>
+        <span class="member-badge mb-member">Member</span>${removeBtn}
+      </div>`;
+    }).join("");
+    $("cmMemberList").innerHTML = html;
+
+    const pEl = $("cmPendingSection");
+    if (pending.length) {
+      pEl.innerHTML = `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--tx3);margin:20px 0 12px;padding-top:14px;border-top:1px solid var(--bor)">Pending Requests (${pending.length})</div>` +
+        pending.map(m => `<div class="req-row">
+          <div class="member-av">${(m.user_name||"?")[0].toUpperCase()}</div>
+          <div class="req-info"><div class="req-name">${m.user_name}</div><div class="req-meta">${m.user_email} · ${timeAgo(m.requested_at)}</div></div>
+          <div class="req-actions">
+            <button class="btn-accept" onclick="memberAction(${id},${m.user_id},'approve')">✓ Accept</button>
+            <button class="btn-reject2" onclick="memberAction(${id},${m.user_id},'reject')">✕ Reject</button>
+          </div>
+        </div>`).join("");
+    } else { pEl.innerHTML = userIsAdmin ? `<p style="color:var(--tx3);font-size:13px;margin-top:16px;padding-top:14px;border-top:1px solid var(--bor)">No pending requests.</p>` : ""; }
+  } catch {}
+}
+
+async function memberAction(commId, userId, action) {
+  try {
+    const r = await fetch(`${SERVER}/committees/${commId}/members/${userId}/${action}`, {method:"POST"});
+    const d = await r.json();
+    if (d.success) {
+      toast(action==="approve" ? "Approved ✅" : "Rejected / Removed");
+      loadMembers(commId); loadSideComms(); loadPendingCount();
+    } else toast("Action failed");
+  } catch { toast("Server error"); }
+}
+
+// ── NOTIFICATIONS ─────────────────────────────────────────────────────────────
+async function loadNotifications() {
+  try {
+    const r = await fetch(`${SERVER}/notifications/${user.id}`);
+    const notifs = await r.json();
+    const el = $("notifList");
+    await fetch(`${SERVER}/notifications/read-all/${user.id}`, {method:"POST"});
+    loadNotifBadge();
+    if (!notifs.length) { el.innerHTML = `<div class="empty"><div class="ei">🔔</div><h4>No notifications</h4><p>You're all caught up!</p></div>`; return; }
+    el.innerHTML = notifs.map(n => `<div class="notif-item ${n.is_read?'':'unread'}">
+      <div class="notif-icon">${n.icon||"🔔"}</div>
+      <div>
+        <div class="notif-title">${n.title}</div>
+        <div class="notif-text">${n.body||""}</div>
+        <div class="notif-time">${timeAgo(n.created_at)}</div>
+      </div>
+    </div>`).join("");
+  } catch {}
+}
+
+async function loadNotifBadge() {
+  try {
+    const r = await fetch(`${SERVER}/notifications/unread-count/${user.id}`);
+    const d = await r.json();
+    const badge = $("notifBadge");
+    if (badge) { if(d.count>0){badge.textContent=d.count;badge.style.display="inline-flex";}else badge.style.display="none"; }
+  } catch {}
+}
+
+// ── ADMIN: CREATE COMMITTEE ───────────────────────────────────────────────────
+async function createCommittee() {
+  const name = $("cName").value.trim(), desc = $("cDesc").value.trim(), cat = $("cCat").value, icon = $("cIcon").value.trim()||"🏛️";
+  if (!name || !desc) { toast("Please fill all fields"); return; }
+  try {
+    const r = await fetch(`${SERVER}/committees`, {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,description:desc,category:cat,icon,created_by:user.id})});
+    const d = await r.json();
+    if (d.success) { closeModal("crtCommModal"); $("cName").value=""; $("cDesc").value=""; toast("Committee created! 🏛️"); loadComms(); loadStats(); }
+    else toast(d.error || "Failed");
+  } catch { toast("Server error"); }
+}
+
+// ── ADMIN: DELETE COMMITTEE ───────────────────────────────────────────────────
+function deleteCommittee(id, name) {
+  confirmDelete(`Delete committee "${name}"? All members, events, and announcements will be permanently removed.`, async () => {
+    try {
+      const r = await fetch(`${SERVER}/committees/${id}`, {method:"DELETE"});
+      const d = await r.json();
+      if (d.success) { toast("Committee deleted"); closeModal("commModal"); loadComms(); loadStats(); }
+      else toast(d.error || "Failed to delete");
+    } catch { toast("Server error"); }
+  });
+}
+
+// ── ADMIN: CREATE EVENT ───────────────────────────────────────────────────────
+async function openCreateEvent() {
+  try { const r = await fetch(`${SERVER}/committees`); const c = await r.json(); $("evComm").innerHTML = c.map(c => `<option value="${c.id}">${c.icon} ${c.name}</option>`).join(""); } catch {}
+  openModal("crtEvModal");
+}
+
+async function createEvent() {
+  const title = $("evTitle").value.trim(), desc = $("evDesc").value.trim(), date = $("evDate").value,
+        venue = $("evVenue").value.trim(), max = parseInt($("evMax").value)||0, commId = $("evComm").value;
+  if (!title || !date || !venue) { toast("Please fill all fields"); return; }
+  try {
+    const r = await fetch(`${SERVER}/committee-events`, {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({committee_id:commId,title,description:desc,event_date:date,venue,max_participants:max,created_by:user.id})});
+    const d = await r.json();
+    if (d.success) { closeModal("crtEvModal"); $("evTitle").value=""; $("evDesc").value=""; $("evDate").value=""; $("evVenue").value=""; toast("Event created! 📅"); loadEvents(); loadFeed(); loadStats(); }
+    else toast(d.error || "Failed");
+  } catch { toast("Server error"); }
+}
+
+// ── ADMIN: DELETE EVENT ───────────────────────────────────────────────────────
+function deleteEvent(id) {
+  const e = allEvents.find(e => e.id === id);
+  confirmDelete(`Delete event "${e?e.title:'this event'}"? All RSVPs will be removed.`, async () => {
+    try {
+      const r = await fetch(`${SERVER}/committee-events/${id}`, {method:"DELETE"});
+      const d = await r.json();
+      if (d.success) { toast("Event deleted"); loadEvents(); loadFeed(); loadStats(); }
+      else toast(d.error || "Failed to delete");
+    } catch { toast("Server error"); }
+  });
+}
+
+// ── ADMIN: CREATE ANNOUNCEMENT ────────────────────────────────────────────────
+async function openCreateAnn() {
+  try { const r = await fetch(`${SERVER}/committees`); const c = await r.json(); $("annComm").innerHTML = c.map(c => `<option value="${c.id}">${c.icon} ${c.name}</option>`).join(""); } catch {}
+  openModal("crtAnnModal");
+}
+
+async function createAnnouncement() {
+  const title = $("annTitle").value.trim(), body = $("annBody").value.trim(), type = $("annType").value, commId = $("annComm").value;
+  if (!title || !body) { toast("Please fill all fields"); return; }
+  try {
+    const r = await fetch(`${SERVER}/announcements`, {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({committee_id:commId,title,body,type,created_by:user.id})});
+    const d = await r.json();
+    if (d.success) { closeModal("crtAnnModal"); $("annTitle").value=""; $("annBody").value=""; toast("Announcement posted! 📢"); loadFeed(); }
+    else toast(d.error || "Failed");
+  } catch { toast("Server error"); }
+}
+
+// ── ADMIN: DELETE ANNOUNCEMENT ────────────────────────────────────────────────
+function deleteAnnouncement(id) {
+  confirmDelete("Delete this announcement permanently?", async () => {
+    try {
+      const r = await fetch(`${SERVER}/announcements/${id}`, {method:"DELETE"});
+      const d = await r.json();
+      if (d.success) { toast("Announcement deleted"); loadFeed(); loadCmAnns(activeCmId); }
+      else toast(d.error || "Failed to delete");
+    } catch { toast("Server error"); }
+  });
+}
+
+// ── ADMIN: VIEW ALL REQUESTS ──────────────────────────────────────────────────
+async function openAdminRequests() {
+  const el = $("adminReqList");
+  try {
+    const r = await fetch(`${SERVER}/committee-requests/pending`);
+    const rows = await r.json();
+    if (!rows.length) { el.innerHTML = `<div class="empty"><div class="ei">✅</div><h4>No pending requests</h4><p>All handled!</p></div>`; openModal("adminReqModal"); return; }
+    el.innerHTML = rows.map(m => `<div class="req-row">
+      <div class="member-av">${(m.user_name||"?")[0].toUpperCase()}</div>
+      <div class="req-info">
+        <div class="req-name">${m.user_name}</div>
+        <div class="req-meta">${m.user_email} · Wants to join ${m.committee_icon} ${m.committee_name} · ${timeAgo(m.requested_at)}</div>
+      </div>
+      <div class="req-actions">
+        <button class="btn-accept" onclick="memberAction(${m.committee_id},${m.user_id},'approve');openAdminRequests()">✓ Accept</button>
+        <button class="btn-reject2" onclick="memberAction(${m.committee_id},${m.user_id},'reject');openAdminRequests()">✕ Reject</button>
+      </div>
+    </div>`).join("");
+  } catch { el.innerHTML = `<div class="empty"><div class="ei">⚠️</div><h4>Could not load requests</h4></div>`; }
+  openModal("adminReqModal");
+}
+async function setupUI() {
+  // ... existing code ...
+  // Verify admin from server
+  if (!userIsAdmin && user.id) {
+    try {
+      const r = await fetch(`${SERVER}/is-admin/${user.id}`);
+      const d = await r.json();
+      if (d.isAdmin) {
+        userIsAdmin = true;
+        const u = {...user, isAdmin: true};
+        localStorage.setItem("user", JSON.stringify(u));
+      }
+    } catch {}
+  }
+  // Now apply admin UI
+  $("navUser").textContent = "Hi, " + user.name.split(" ")[0] + (userIsAdmin ? " ⚙️" : " 🎓");
+  if (userIsAdmin) {
+    $("switchBtn").textContent = "↩ Switch to Student";
+    $("adminBar").style.display = "flex";
+    $("adminNameBadge").textContent = "Admin: " + user.name;
+    loadPendingCount();
+  } else {
+    $("switchBtn").textContent = "↩ Switch to Admin";
+    $("adminBar").style.display = "none";
+  }
+}
+// ── BOOT ──────────────────────────────────────────────────────────────────────
+setupUI();
+Promise.all([loadStats(), loadFeed(), loadSideComms()]);
+loadNotifBadge();
+</script>
+</body>
+</html>

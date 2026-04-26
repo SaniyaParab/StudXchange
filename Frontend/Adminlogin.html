@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Portal — StudXchange</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Lora:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style/Adminlogin.css">
+</head>
+<body>
+
+<div class="wrapper">
+  <div class="logo">
+    <div class="logo-icon">S</div>
+    <h1>StudXchange</h1>
+    <p>Academic Marketplace & Committee Hub</p>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="admin-badge">⚙️ Admin Portal</div>
+      <h2>Administrator Access</h2>
+      <p>Sign in or register as a committee administrator</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab on" onclick="switchTab('login',this)">Sign In</button>
+      <button class="tab" onclick="switchTab('signup',this)">Register Admin</button>
+    </div>
+
+    <div class="form-body">
+
+      <!-- LOGIN PANEL -->
+      <div class="panel on" id="panel-login">
+        <div class="msg-box" id="loginMsg"></div>
+        <div class="fg">
+          <label>Email Address</label>
+          <input type="email" id="lEmail" placeholder="admin@college.edu" autocomplete="email">
+        </div>
+        <div class="fg">
+          <label>Password</label>
+          <div class="secret-wrap">
+            <input type="password" id="lPass" placeholder="••••••••" autocomplete="current-password">
+            <button class="eye" onclick="toggleVis('lPass',this)">👁</button>
+          </div>
+        </div>
+        <button class="btn-main" id="loginBtn" onclick="doLogin()">Sign In as Admin →</button>
+        <div class="or">or</div>
+        <div class="back-link">Not an admin? <a href="Login.html">Student Login</a></div>
+      </div>
+
+      <!-- SIGNUP PANEL -->
+      <div class="panel" id="panel-signup">
+        <div class="msg-box" id="signupMsg"></div>
+        <div class="key-info">
+          <strong>🔑 Admin Registration Key Required</strong>
+          Contact your institution's IT department or existing admin for the secret key to register.
+        </div>
+        <div class="fg">
+          <label>Full Name</label>
+          <input type="text" id="sName" placeholder="e.g. Prof. Ananya Sharma">
+        </div>
+        <div class="fg">
+          <label>Email Address</label>
+          <input type="email" id="sEmail" placeholder="admin@college.edu">
+        </div>
+        <div class="fg">
+          <label>Password</label>
+          <div class="secret-wrap">
+            <input type="password" id="sPass" placeholder="Min. 8 characters">
+            <button class="eye" onclick="toggleVis('sPass',this)">👁</button>
+          </div>
+          <div class="hint">Must be at least 8 characters</div>
+        </div>
+        <div class="fg">
+          <label>Admin Secret Key</label>
+          <div class="secret-wrap">
+            <input type="password" id="sKey" placeholder="Secret key from institution">
+            <button class="eye" onclick="toggleVis('sKey',this)">👁</button>
+          </div>
+          <div class="hint">Default key: <code>STUDXCHANGE_ADMIN_2026</code> (change in server.js)</div>
+        </div>
+        <button class="btn-main" id="signupBtn" onclick="doSignup()">Register as Admin →</button>
+        <div class="or">or</div>
+        <div class="back-link">Not an admin? <a href="Login.html">Student Login</a></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const SERVER = "http://localhost:5000";
+
+function switchTab(tab, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('panel-' + tab).classList.add('on');
+  clearMsgs();
+}
+
+function clearMsgs() {
+  ['loginMsg','signupMsg'].forEach(id => {
+    const el = document.getElementById(id);
+    el.className = 'msg-box';
+    el.textContent = '';
+  });
+}
+
+function showMsg(id, text, type) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = 'msg-box ' + type;
+}
+
+function toggleVis(inputId, btn) {
+  const inp = document.getElementById(inputId);
+  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+  else { inp.type = 'password'; btn.textContent = '👁'; }
+}
+
+async function doLogin() {
+  const email = document.getElementById('lEmail').value.trim();
+  const pass  = document.getElementById('lPass').value;
+  if (!email || !pass) { showMsg('loginMsg', 'Please fill all fields.', 'err'); return; }
+
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span>Signing in…';
+
+  try {
+    const r = await fetch(`${SERVER}/admin/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pass })
+    });
+    const d = await r.json();
+    if (d.success) {
+      // Store admin user (same format as regular user but with isAdmin flag)
+      const adminUser = { ...d.admin, isAdmin: true };
+      localStorage.setItem('user', JSON.stringify(adminUser));
+      showMsg('loginMsg', '✅ Welcome back, ' + d.admin.name + '! Redirecting…', 'ok');
+      setTimeout(() => location.href = 'committee.html', 1000);
+    } else {
+      showMsg('loginMsg', '❌ ' + (d.error || 'Invalid credentials'), 'err');
+    }
+  } catch {
+    showMsg('loginMsg', '⚠️ Cannot connect to server. Make sure server.js is running.', 'err');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = 'Sign In as Admin →';
+}
+
+async function doSignup() {
+  const name  = document.getElementById('sName').value.trim();
+  const email = document.getElementById('sEmail').value.trim();
+  const pass  = document.getElementById('sPass').value;
+  const key   = document.getElementById('sKey').value.trim();
+
+  if (!name || !email || !pass || !key) { showMsg('signupMsg', 'Please fill all fields.', 'err'); return; }
+  if (pass.length < 8) { showMsg('signupMsg', 'Password must be at least 8 characters.', 'err'); return; }
+
+  const btn = document.getElementById('signupBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span>Registering…';
+
+  try {
+    const r = await fetch(`${SERVER}/admin/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password: pass, secret_key: key })
+    });
+    const d = await r.json();
+    if (d.success) {
+      showMsg('signupMsg', '✅ Admin account created! You can now sign in.', 'ok');
+      document.getElementById('sName').value = '';
+      document.getElementById('sEmail').value = '';
+      document.getElementById('sPass').value = '';
+      document.getElementById('sKey').value = '';
+      setTimeout(() => switchTab('login', document.querySelectorAll('.tab')[0]), 1500);
+    } else {
+      showMsg('signupMsg', '❌ ' + (d.error || 'Registration failed'), 'err');
+    }
+  } catch {
+    showMsg('signupMsg', '⚠️ Cannot connect to server. Make sure server.js is running.', 'err');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = 'Register as Admin →';
+}
+
+// Allow Enter key
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    if (document.getElementById('panel-login').classList.contains('on')) doLogin();
+    else doSignup();
+  }
+});
+</script>
+</body>
+</html>

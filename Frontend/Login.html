@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Login — StudXchange</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style/Login.css">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="auth-wrap">
+
+  <!-- LEFT PANEL -->
+  <div class="auth-left">
+    <div class="brand">
+      <div class="brand-icon">S</div>
+      <div>
+        <div class="brand-name">StudXchange</div>
+        <div class="brand-sub">Academic Marketplace</div>
+      </div>
+    </div>
+    <div class="left-content">
+      <h1>Trade smarter,<br><em>study better.</em></h1>
+      <p>The student marketplace built for VCET. Buy, sell, rent — all in one place.</p>
+      <div class="features">
+        <div class="feat">✅ Only VCET students</div>
+        <div class="feat">💬 Built-in chat</div>
+        <div class="feat">🔄 Rent & borrow</div>
+        <div class="feat">🛡️ Verified community</div>
+      </div>
+    </div>
+    <div class="left-footer">© 2026 StudXchange</div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="auth-right" id="authRight">
+
+    <!-- LOGIN -->
+    <div class="form-box" id="loginBox">
+      <h2>Welcome back 👋</h2>
+      <p class="form-sub">Sign in to your StudXchange account</p>
+
+      <form id="loginForm">
+        <div class="fg">
+          <label><i class="fa fa-envelope"></i> Email</label>
+          <input type="email" id="loginEmail" placeholder="you@vcet.edu.in" required autocomplete="email">
+        </div>
+        <div class="fg">
+          <label><i class="fa fa-lock"></i> Password</label>
+          <input type="password" id="loginPassword" placeholder="Your password" required>
+        </div>
+        <button type="submit" class="auth-btn" id="loginBtn">Sign In</button>
+      </form>
+
+      <div class="switch-text">
+        Don't have an account?
+        <span onclick="showRegister()">Create one →</span>
+      </div>
+    </div>
+
+    <!-- REGISTER -->
+    <div class="form-box hidden" id="registerBox">
+      <h2>Join StudXchange 🎓</h2>
+      <p class="form-sub">Create your account with your VCET email</p>
+
+      <form id="registerForm">
+        <div class="fg">
+          <label><i class="fa fa-user"></i> Full Name</label>
+          <input type="text" id="regName" placeholder="Your full name" required autocomplete="name">
+        </div>
+        <div class="fg">
+          <label><i class="fa fa-envelope"></i> VCET Email</label>
+          <input type="email" id="regEmail" placeholder="you@vcet.edu.in" required autocomplete="email">
+        </div>
+        <div class="fg">
+          <label><i class="fa fa-lock"></i> Password</label>
+          <input type="password" id="regPassword" placeholder="Choose a password" required>
+        </div>
+        <button type="submit" class="auth-btn green" id="registerBtn">Create Account</button>
+      </form>
+
+      <div class="switch-text">
+        Already have an account?
+        <span onclick="showLogin()">Sign in →</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<script src="script/Login.js"></script>
+</body>
+</html>

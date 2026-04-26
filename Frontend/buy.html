@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Product Details — StudXchange</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Lora:wght@600&display=swap" rel="stylesheet">
+<link href="style/buy.css" rel="stylesheet">
+
+</head>
+<body>
+
+<nav class="nav">
+  <a href="marketplace.html" class="nav-logo">
+    <div class="nav-logo-icon">S</div>
+    <div>
+      <b>StudXchange</b>
+      <small>Academic Marketplace</small>
+    </div>
+  </a>
+  <a href="marketplace.html" class="back-btn">← Back</a>
+</nav>
+
+<div class="container" id="mainContainer" style="display:none">
+
+  <div class="product-image">
+    <img id="productImage" alt="Product Image">
+    <div class="img-overlay"></div>
+  </div>
+
+  <div class="info-card">
+    <div class="info-badge" id="categoryBadge"></div>
+    <h2 id="title"></h2>
+    <div class="price" id="price"></div>
+    <div class="meta">
+      <div class="meta-row" id="sellerRow"></div>
+      <div class="meta-row" id="conditionRow"></div>
+      <div class="meta-row" id="descRow"></div>
+    </div>
+    <button class="btn contact" id="chatBtn">💬 Request Chat</button>
+    <div id="chatStatus"></div>
+  </div>
+
+</div>
+
+<div class="loading-state" id="loadingState">
+  <div class="spinner"></div>
+  <p>Loading product…</p>
+</div>
+
+<script>
+const user   = JSON.parse(localStorage.getItem("user"));
+const params = new URLSearchParams(window.location.search);
+const id     = params.get("id");
+
+if (!id) { alert("No product selected"); location.href="marketplace.html"; }
+
+async function loadProduct() {
+  try {
+    const res  = await fetch(`http://localhost:5000/product/${id}`);
+    const data = await res.json();
+    if (!data) { alert("Product not found"); location.href="marketplace.html"; return; }
+
+    document.getElementById("loadingState").style.display    = "none";
+    document.getElementById("mainContainer").style.display   = "grid";
+
+    document.getElementById("productImage").src             = data.image || "https://via.placeholder.com/500x400?text=No+Image";
+    document.getElementById("title").textContent            = data.title;
+    document.getElementById("price").textContent            = "₹" + Number(data.price).toLocaleString('en-IN');
+    document.getElementById("categoryBadge").textContent    = "🏷 " + data.category;
+    document.getElementById("sellerRow").innerHTML          = `<span class="mi">👤</span><div><div class="ml">Seller</div><div class="mv">${data.seller_name}</div></div>`;
+    document.getElementById("conditionRow").innerHTML       = `<span class="mi">📦</span><div><div class="ml">Condition</div><div class="mv">${data.condition_type||"—"}</div></div>`;
+    document.getElementById("descRow").innerHTML            = data.description ? `<span class="mi">📝</span><div><div class="ml">Description</div><div class="mv">${data.description}</div></div>` : "";
+
+    const btn       = document.getElementById("chatBtn");
+    const statusDiv = document.getElementById("chatStatus");
+
+    if (user && data.seller_id && user.id === data.seller_id) {
+      btn.style.display = "none";
+      statusDiv.innerHTML = `<div class="own-listing">✅ This is your listing</div>`;
+      return;
+    }
+
+    if (user && data.seller_id) {
+      try {
+        const sr   = await fetch(`http://localhost:5000/chat-status/${user.id}/${data.seller_id}/${data.id}`);
+        const sd   = await sr.json();
+        if (sd.status === "pending") {
+          btn.disabled=true; btn.textContent="Request Sent ⏳";
+          statusDiv.innerHTML = `<div class="status-msg pending">Waiting for seller to accept your request.</div>`;
+        } else if (sd.status === "accepted") {
+          btn.disabled=true; btn.textContent="Chat Accepted ✅";
+          statusDiv.innerHTML = `<div class="status-msg accepted">✅ Seller accepted! <a href="chat.html">Open Chat →</a></div>`;
+        }
+      } catch {}
+    }
+
+    btn.onclick = () => {
+      if (!user) { alert("Please login to send a chat request"); location.href="Login.html"; return; }
+      if (!confirm("Send a chat request to the seller?")) return;
+      btn.disabled=true; btn.textContent="Sending…";
+      fetch("http://localhost:5000/send-chat-request", {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ sender_id:user.id, receiver_id:data.seller_id, product_id:data.id })
+      }).then(r=>r.json()).then(result => {
+        if (result.success) {
+          btn.textContent="Request Sent ⏳";
+          statusDiv.innerHTML=`<div class="status-msg pending">Waiting for seller to accept.</div>`;
+        } else {
+          alert(result.error || "Could not send request. Try again.");
+          btn.disabled=false; btn.textContent="💬 Request Chat";
+        }
+      });
+    };
+  } catch {
+    alert("Error loading product. Make sure server is running.");
+    location.href="marketplace.html";
+  }
+}
+
+loadProduct();
+</script>
+</body>
+</html>

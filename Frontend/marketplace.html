@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudXchange — Student Marketplace</title>
+<link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style/marketplace.css">
+</head>
+<body>
+
+<nav id="navbar">
+  <div class="logo">
+    <div class="logo-icon">S</div>
+    <div>
+      <span class="logo-title">StudXchange</span>
+      <span class="logo-sub">Academic Marketplace</span>
+    </div>
+  </div>
+  <div class="nav-center">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="Search products…" oninput="searchProducts()">
+    </div>
+  </div>
+  <div class="nav-right">
+    <button class="btn btn-sell" onclick="handleSell()">
+      <span>+</span> Sell
+    </button>
+    <div style="position:relative;">
+      <button class="btn btn-profile" id="profileBtn" onclick="toggleProfileDropdown()">
+        <div class="profile-avatar" id="profileAvatar">?</div>
+        <span id="profileLabel">Account</span>
+        <span class="chevron">▾</span>
+      </button>
+      <div class="profile-dropdown" id="profileDropdown">
+        <div class="dropdown-signin" id="dropdownSignedOut">
+          <div class="drop-logo">👋</div>
+          <p>Sign in to access your profile, listings, and more.</p>
+          <button class="sign-in-btn" onclick="goToSignIn()">Sign In</button>
+          <span class="sign-up-link" onclick="goToSignUp()">New here? Create an account →</span>
+        </div>
+        <div id="dropdownSignedIn" style="display:none;">
+          <div class="profile-dropdown-header">
+            <div class="name" id="dropdownName">—</div>
+            <div class="email" id="dropdownEmail">—</div>
+          </div>
+          <a class="dropdown-item" href="myprofile.html">👤 My Profile</a>
+          <a class="dropdown-item" href="chat.html">💬 Chats</a>
+          <span class="dropdown-item danger" onclick="signOut()">🚪 Sign Out</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg-shapes">
+    <div class="shape s1"></div>
+    <div class="shape s2"></div>
+    <div class="shape s3"></div>
+  </div>
+  <div class="hero-container">
+    <a href="marketplace.html" class="hero-card animate-card" style="--i:0">
+      <div class="hero-card-icon">🛍️</div>
+      <h2>Marketplace</h2>
+      <p>Buy & sell with your fellow students</p>
+      <span class="hero-card-arrow">→</span>
+    </a>
+    <a href="rentpage.html" class="hero-card animate-card teal" style="--i:1">
+      <div class="hero-card-icon">🔄</div>
+      <h2>Rent & Borrow</h2>
+      <p>Rent items, save money together</p>
+      <span class="hero-card-arrow">→</span>
+    </a>
+    <a href="committee.html" class="hero-card animate-card" style="--i:2">
+      <div class="hero-card-icon">🏛️</div>
+      <h2>Committee Hub</h2>
+      <p>Events, clubs & announcements</p>
+      <span class="hero-card-arrow">→</span>
+    </a>
+  </div>
+</section>
+
+<!-- CATEGORY SCROLL -->
+<div class="cat-strip">
+  <button class="cat-chip active" onclick="filterByCategory('all', this)">✨ All</button>
+  <button class="cat-chip" onclick="filterByCategory('Laptops', this)">💻 Laptops</button>
+  <button class="cat-chip" onclick="filterByCategory('Books', this)">📚 Books</button>
+  <button class="cat-chip" onclick="filterByCategory('Electronics', this)">📱 Electronics</button>
+  <button class="cat-chip" onclick="filterByCategory('Notes', this)">📝 Notes</button>
+  <button class="cat-chip" onclick="filterByCategory('Bikes', this)">🚲 Bikes</button>
+  <button class="cat-chip" onclick="filterByCategory('Furniture', this)">🪑 Furniture</button>
+</div>
+
+<!-- PRODUCTS -->
+<section class="products">
+  <div class="products-header">
+    <div>
+      <h2>Newest Listings</h2>
+      <p id="productCount">Loading...</p>
+    </div>
+    <div class="sort-wrap">
+      <select id="sortSelect" onchange="sortProducts()">
+        <option value="newest">Newest First</option>
+        <option value="price-low">Price: Low → High</option>
+        <option value="price-high">Price: High → Low</option>
+      </select>
+    </div>
+  </div>
+  <div class="grid" id="productContainer">
+    <div class="loading-grid">
+      <div class="skeleton"></div>
+      <div class="skeleton"></div>
+      <div class="skeleton"></div>
+      <div class="skeleton"></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <span class="footer-logo">StudXchange</span>
+      <span>Student Marketplace — Built for VCET</span>
+    </div>
+    <div class="footer-links">
+      <a href="marketplace.html">Marketplace</a>
+      <a href="rentpage.html">Rent</a>
+      <a href="chat.html">Chats</a>
+    </div>
+    <div>© 2026 StudXchange</div>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script src="script/marketplace.js"></script>
+</body>
+</html>

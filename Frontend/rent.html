@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>List for Rent — StudXchange</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style/rent.css">
+</head>
+<body>
+
+<div class="page-wrap">
+  <a href="rentpage.html" class="back-btn">← Back to Rentals</a>
+
+  <div class="sell-card">
+    <div class="card-header">
+      <div class="card-header-icon">🔄</div>
+      <div>
+        <h2>List Item for Rent</h2>
+        <p>Set your daily rate and let students borrow from you</p>
+      </div>
+    </div>
+
+    <form id="rentForm">
+      <div class="form-grid">
+
+        <div class="full">
+          <label>Upload Photo</label>
+          <div class="upload" id="uploadZone" onclick="document.getElementById('photo').click()">
+            <div class="upload-inner" id="uploadInner">
+              <div class="upload-icon">📷</div>
+              <div class="upload-text">Click to upload image</div>
+              <div class="upload-hint">JPG, PNG up to 5MB</div>
+            </div>
+            <input type="file" id="photo" accept="image/*" onchange="previewImage(event)">
+            <div class="preview" id="preview"></div>
+          </div>
+        </div>
+
+        <div>
+          <label>Title <span class="req">*</span></label>
+          <input type="text" id="title" placeholder="e.g. Mountain Bike, Calculator" required>
+        </div>
+
+        <div>
+          <label>Category</label>
+          <select id="category">
+            <option>Books</option>
+            <option>Laptops</option>
+            <option>Electronics</option>
+            <option>Bikes</option>
+            <option>Furniture</option>
+            <option>Other</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Rent per Day (₹) <span class="req">*</span></label>
+          <input type="number" id="rent_day" placeholder="e.g. 50" required>
+        </div>
+
+        <div>
+          <label>Security Deposit (₹)</label>
+          <input type="number" id="deposit" placeholder="e.g. 200 (refundable)">
+        </div>
+
+        <div class="full">
+          <label>Description</label>
+          <textarea id="description" placeholder="Describe the item — condition, accessories included, pickup location…"></textarea>
+        </div>
+
+        <div>
+          <label>Contact Number</label>
+          <input type="tel" id="contact" placeholder="+91 98765 43210">
+        </div>
+
+      </div>
+
+      <button type="submit" class="post-btn" id="postBtn">
+        <span id="btnText">🔄 Post for Rent</span>
+        <span id="btnLoader" style="display:none">Posting…</span>
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+let base64Image = "";
+
+function previewImage(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  document.getElementById("uploadInner").style.display = "none";
+  const preview = document.getElementById("preview");
+  preview.innerHTML = "";
+  const img = document.createElement("img");
+  img.src = URL.createObjectURL(file);
+  preview.appendChild(img);
+  const reader = new FileReader();
+  reader.onloadend = () => { base64Image = reader.result; };
+  reader.readAsDataURL(file);
+}
+
+const user = JSON.parse(localStorage.getItem("user"));
+if (!user) { alert("Please login first"); window.location.href = "Login.html"; }
+
+document.getElementById("rentForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const title    = document.getElementById("title").value.trim();
+  const rent_day = document.getElementById("rent_day").value;
+  if (!title || !rent_day) { alert("Please fill required fields"); return; }
+
+  const btn     = document.getElementById("postBtn");
+  btn.disabled  = true;
+  document.getElementById("btnText").style.display  = "none";
+  document.getElementById("btnLoader").style.display = "inline";
+
+  const data = {
+    title,
+    category:     document.getElementById("category").value,
+    description:  document.getElementById("description").value,
+    contact:      document.getElementById("contact").value,
+    rent_per_day: rent_day,
+    deposit:      document.getElementById("deposit").value || 0,
+    seller_name:  user.name,
+    seller_email: user.email.toLowerCase(),
+    seller_id:    user.id,
+    image:        base64Image
+  };
+
+  try {
+    const res    = await fetch("http://localhost:5000/add-rent", {
+      method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(data)
+    });
+    const result = await res.json();
+    if (result.success) {
+      alert("Item listed for rent! 🚀");
+      window.location.href = "rentpage.html";
+    } else {
+      alert("Error: " + result.error);
+      btn.disabled=false;
+      document.getElementById("btnText").style.display  = "inline";
+      document.getElementById("btnLoader").style.display = "none";
+    }
+  } catch {
+    alert("Server error — make sure server is running on port 5000");
+    btn.disabled=false;
+    document.getElementById("btnText").style.display  = "inline";
+    document.getElementById("btnLoader").style.display = "none";
+  }
+});
+</script>
+</body>
+</html>

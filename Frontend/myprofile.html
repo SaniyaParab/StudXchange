@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Profile — StudXchange</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Lora:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style/myprofile.css">
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <a href="marketplace.html" class="nav-logo">
+    <b>StudXchange</b>
+    <small>Academic Marketplace</small>
+  </a>
+  <div class="nav-r">
+    <button class="btn btn-g" onclick="location.href='marketplace.html'">← Marketplace</button>
+    <button class="btn btn-m" onclick="openEdit()">✏️ Edit Profile</button>
+    <button class="btn btn-d" onclick="signOut()">Sign Out</button>
+  </div>
+</nav>
+
+<!-- BANNER -->
+<div class="band"></div>
+
+<!-- PROFILE HEADER -->
+<div class="ph-wrap">
+  <div class="av-float r1">
+    <div class="av">
+      <span class="av-l" id="avL">?</span>
+    </div>
+  </div>
+  <div class="ph-name-row r1">
+    <div>
+      <div class="user-name" id="dispName">—</div>
+      <div class="pills">
+        <span class="pill">🎓 <span id="pCollege">Student</span></span>
+        <span class="pill">📍 <span id="pLoc">—</span></span>
+        <span class="pill" style="color:var(--gr);border-color:#C0DEC8;">✅ Verified</span>
+      </div>
+    </div>
+    <div class="ph-actions">
+      <button class="btn btn-g" onclick="doShare()">🔗 Share</button>
+    </div>
+  </div>
+</div>
+
+<!-- BODY -->
+<div class="pg">
+
+  <!-- SIDEBAR -->
+  <aside class="r3">
+    <div class="card">
+      <div class="ch">
+        <h3>About Me</h3>
+        <span class="che" onclick="openEdit()">Edit ✏️</span>
+      </div>
+      <div class="cb">
+        <div class="ar"><div class="ar-ic">👤</div><div><div class="ar-lb">Name</div><div class="ar-v" id="abN">—</div></div></div>
+        <div class="ar"><div class="ar-ic">📧</div><div><div class="ar-lb">Email</div><div class="ar-v" id="abE">—</div></div></div>
+        <div class="ar"><div class="ar-ic">📞</div><div><div class="ar-lb">Phone</div><div class="ar-v" id="abPh">—</div></div></div>
+        <div class="ar"><div class="ar-ic">🎓</div><div><div class="ar-lb">College</div><div class="ar-v" id="abC">—</div></div></div>
+        <div class="ar"><div class="ar-ic">📚</div><div><div class="ar-lb">Course & Year</div><div class="ar-v" id="abCo">—</div></div></div>
+        <div class="ar"><div class="ar-ic">📍</div><div><div class="ar-lb">Location</div><div class="ar-v" id="abL">—</div></div></div>
+        <div class="ar"><div class="ar-ic">💬</div><div><div class="ar-lb">Bio</div><div class="ar-v" id="abB" style="line-height:1.55">—</div></div></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="r4">
+    <div class="tabs">
+      <button class="tb-btn on" onclick="goTab('listings',this)">📦 My Listings</button>
+      <button class="tb-btn" onclick="goTab('requests',this)">💬 Requests</button>
+      <button class="tb-btn" onclick="goTab('wishlist',this)">♡ Wishlist</button>
+    </div>
+
+    <div class="pane on" id="pane-listings">
+      <div class="pane-lbl">Items you listed for sale or rent</div>
+      <div id="r-listings"></div>
+    </div>
+
+    <div class="pane" id="pane-requests">
+      <div class="pane-lbl">Chat Requests</div>
+      <div id="requestContainer"></div>
+    </div>
+
+    <div class="pane" id="pane-wishlist">
+      <div class="pane-lbl">Your saved items</div>
+      <div id="r-wishlist"></div>
+    </div>
+  </main>
+</div>
+
+<!-- ── EDIT PROFILE MODAL ─────────────────────────────────────────────── -->
+<div class="ov" id="editModal" onclick="if(event.target===this)closeEdit()">
+  <div class="mod">
+    <div class="mod-hd">
+      <h2>Edit Profile</h2>
+      <button class="mod-x" onclick="closeEdit()">×</button>
+    </div>
+    <div class="mod-sc">
+      <div class="fg"><label>Full Name</label><input id="fName" placeholder="e.g. Riya Sharma"></div>
+      <div class="fg"><label>Email</label><input id="fEmail" type="email" placeholder="you@vcet.edu.in"></div>
+      <div class="fg"><label>Phone</label><input id="fPhone" type="tel" placeholder="+91 98765 43210"></div>
+      <div class="fg"><label>College / University</label><input id="fCollege" placeholder="e.g. VCET Pune"></div>
+      <div class="fg"><label>Course & Year</label><input id="fCourse" placeholder="e.g. B.Tech CSE — 3rd Year"></div>
+      <div class="fg"><label>Location</label><input id="fLoc" placeholder="e.g. Pune, Maharashtra"></div>
+      <div class="fg"><label>Bio</label><textarea id="fBio" rows="3" placeholder="Tell others a little about yourself…"></textarea></div>
+    </div>
+    <div class="mod-ft">
+      <button class="btn btn-g" onclick="closeEdit()">Cancel</button>
+      <button class="btn btn-m" onclick="saveProfile()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── EDIT LISTING MODAL ─────────────────────────────────────────────── -->
+<div class="ov" id="editListingModal" onclick="if(event.target===this)closeEditListing()">
+  <div class="mod">
+    <div class="mod-hd">
+      <h2>Edit Listing</h2>
+      <button class="mod-x" onclick="closeEditListing()">×</button>
+    </div>
+    <div class="mod-sc">
+      <div class="fg">
+        <label>Title</label>
+        <input id="editItemTitle" placeholder="Item title">
+      </div>
+      <div class="fg">
+        <label>Category</label>
+        <input id="editItemCategory" placeholder="e.g. Books, Electronics">
+      </div>
+      <div class="fg">
+        <label>Description</label>
+        <textarea id="editItemDescription" rows="3" placeholder="Describe the item…"></textarea>
+      </div>
+      <div class="fg">
+        <label>Contact</label>
+        <input id="editItemContact" placeholder="Phone or WhatsApp number">
+      </div>
+
+      <!-- Sale fields -->
+      <div class="fg" id="editItemPriceWrap">
+        <label>Price (₹)</label>
+        <input id="editItemPrice" type="number" placeholder="e.g. 500">
+      </div>
+      <div class="fg" id="editItemConditionWrap">
+        <label>Condition</label>
+        <input id="editItemCondition" placeholder="e.g. Like New, Good, Fair">
+      </div>
+
+      <!-- Rent fields -->
+      <div class="fg" id="editItemRentWrap" style="display:none">
+        <label>Rent Per Day (₹)</label>
+        <input id="editItemRent" type="number" placeholder="e.g. 50">
+      </div>
+      <div class="fg" id="editItemDepositWrap" style="display:none">
+        <label>Security Deposit (₹)</label>
+        <input id="editItemDeposit" type="number" placeholder="e.g. 200">
+      </div>
+
+      <div class="fg">
+        <label>Image URL</label>
+        <input id="editItemImage" placeholder="https://…">
+      </div>
+    </div>
+    <div class="mod-ft">
+      <button class="btn btn-g" onclick="closeEditListing()">Cancel</button>
+      <button class="btn btn-m" onclick="saveEditedItem()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="script/myprofile.js"></script>
+</body>
+</html>

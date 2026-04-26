@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Messages — StudXchange</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Socket.io client -->
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<link rel="stylesheet" href="style/chat.css">
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <a href="marketplace.html" class="nav-logo">
+    <b>StudXchange</b>
+    <small>Academic Marketplace</small>
+  </a>
+  <div class="nav-r">
+    <a href="marketplace.html" class="nbtn">← Marketplace</a>
+  </div>
+</nav>
+
+<!-- BODY -->
+<div class="chat-wrap">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="sb-head">
+      <h2>💬 Messages</h2>
+      <div class="sb-search">
+        <span>🔍</span>
+        <input type="text" id="convSearch" placeholder="Search chats…" oninput="filterChats()">
+      </div>
+    </div>
+    <div class="conv-list" id="convList">
+      <div class="loader">Loading chats…</div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="chat-main">
+
+    <!-- Empty state -->
+    <div class="chat-empty" id="chatEmpty">
+      <div class="big">💬</div>
+      <h3>Your Messages</h3>
+      <p>Select a conversation to start chatting</p>
+    </div>
+
+    <!-- Active chat -->
+    <div class="active-chat" id="activeChat">
+      <div class="chat-head" id="chatHead"></div>
+
+      <div class="messages" id="messagesArea">
+        <div class="loader">Loading messages…</div>
+      </div>
+
+      <!-- Typing indicator -->
+      <div class="typing-wrap" id="typingWrap" style="display:none;">
+        <div class="msg-av" style="background:var(--brl);" id="typingAvatar">?</div>
+        <div class="typing-dots"><span></span><span></span><span></span></div>
+      </div>
+
+      <!-- Input -->
+      <div class="input-bar">
+        <textarea class="chat-input" id="chatInput"
+          placeholder="Type a message…"
+          rows="1"
+          onkeydown="handleKey(event)"
+          oninput="autoResize(this); emitTyping()"></textarea>
+        <button class="send-btn" onclick="sendMessage()" id="sendBtn">➤</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── AUTH CHECK ────────────────────────────────────────────────────────────────
+const ME = JSON.parse(localStorage.getItem("user"));
+if (!ME) {
+  alert("Please login first");
+  location.href = "Login.html";
+}
+
+const SERVER = "http://localhost:5000";
+const socket = io(SERVER);
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let allChats      = [];
+let activeChat    = null;   // current chat_request object
+let typingTimer   = null;
+let isTyping      = false;
+
+// ── LOAD ALL CHATS FOR SIDEBAR ────────────────────────────────────────────────
+async function loadChats() {
+  try {
+    const res  = await fetch(`${SERVER}/my-chats/${ME.id}`);
+    allChats   = await res.json();
+    renderSidebar(allChats);
+
+    // If a request_id was passed in URL, open it automatically
+    const params     = new URLSearchParams(window.location.search);
+    const openId     = params.get("request_id");
+    if (openId) {
+      const found = allChats.find(c => String(c.id) === String(openId));
+      if (found) openConv(found);
+    }
+  } catch (err) {
+    document.getElementById("convList").innerHTML =
+      `<div class="empty-sidebar"><div class="ei">⚠️</div>Could not load chats.<br>Make sure server is running.</div>`;
+  }
+}
+
+function renderSidebar(chats) {
+  const list = document.getElementById("convList");
+
+  if (!chats.length) {
+    list.innerHTML = `
+      <div class="empty-sidebar">
+        <div class="ei">💬</div>
+        <b>No active chats yet</b><br>
+        Accept a buyer's request from your profile to start chatting.
+      </div>`;
+    return;
+  }
+
+  list.innerHTML = chats.map(c => {
+    // Decide who the "other person" is
+    const otherName = ME.id === c.sender_id ? c.seller_name : c.buyer_name;
+    const initials  = otherName.split(" ").map(w => w[0]).join("").toUpperCase().slice(0,2);
+    const isActive  = activeChat && activeChat.id === c.id;
+    return `
+      <div class="conv-item ${isActive ? 'active' : ''}" onclick="openConvById(${c.id})">
+        <div class="conv-av">${initials}</div>
+        <div class="conv-info">
+          <div class="conv-name">${otherName}</div>
+          <span class="conv-product-tag">📦 ${c.product_title}</span>
+          <div class="conv-price">₹${c.product_price}</div>
+        </div>
+      </div>`;
+  }).join("");
+}
+
+function filterChats() {
+  const q = document.getElementById("convSearch").value.toLowerCase();
+  const filtered = allChats.filter(c =>
+    c.product_title.toLowerCase().includes(q) ||
+    c.buyer_name.toLowerCase().includes(q)    ||
+    c.seller_name.toLowerCase().includes(q)
+  );
+  renderSidebar(filtered);
+}
+
+// ── OPEN CONVERSATION ─────────────────────────────────────────────────────────
+function openConvById(id) {
+  const chat = allChats.find(c => c.id === id);
+  if (chat) openConv(chat);
+}
+
+async function openConv(chat) {
+  // Leave old room
+  if (activeChat) socket.emit("leave_room", activeChat.id);
+
+  activeChat = chat;
+  renderSidebar(allChats);
+
+  // Show chat panel
+  document.getElementById("chatEmpty").style.display  = "none";
+  document.getElementById("activeChat").style.display = "flex";
+
+  // Render header
+  const otherName = ME.id === chat.sender_id ? chat.seller_name : chat.buyer_name;
+  const initials  = otherName.split(" ").map(w => w[0]).join("").toUpperCase().slice(0,2);
+  document.getElementById("chatHead").innerHTML = `
+    <div class="chat-head-av">${initials}</div>
+    <div class="chat-head-info">
+      <div class="chat-head-name">${otherName}</div>
+      <div class="chat-head-sub">About: ${chat.product_title}</div>
+    </div>
+    <div class="product-bar">
+      <img class="pb-img" src="${chat.product_image || 'https://via.placeholder.com/36'}" onerror="this.src='https://via.placeholder.com/36'">
+      <div class="pb-info">
+        <div class="pb-title">${chat.product_title}</div>
+        <div class="pb-price">₹${chat.product_price}</div>
+      </div>
+      <span class="pb-badge">Active</span>
+    </div>`;
+
+  document.getElementById("typingAvatar").textContent = initials;
+
+  // Join socket room
+  socket.emit("join_room", chat.id);
+
+  // Load message history
+  await loadMessages(chat.id);
+
+  document.getElementById("chatInput").focus();
+}
+
+// ── LOAD MESSAGE HISTORY ──────────────────────────────────────────────────────
+async function loadMessages(request_id) {
+  const area = document.getElementById("messagesArea");
+  area.innerHTML = `<div class="loader">Loading messages…</div>`;
+
+  try {
+    const res  = await fetch(`${SERVER}/messages/${request_id}`);
+    const msgs = await res.json();
+
+    area.innerHTML = `<div class="date-divider">Today</div>`;
+
+    if (!msgs.length) {
+      area.innerHTML += `
+        <div style="text-align:center;color:var(--tx3);font-size:13px;padding:20px;">
+          No messages yet. Say hello! 👋
+        </div>`;
+    } else {
+      msgs.forEach(m => appendMessage(m, false));
+    }
+
+    scrollToBottom();
+  } catch (err) {
+    area.innerHTML = `<div class="loader">Error loading messages</div>`;
+  }
+}
+
+// ── APPEND A MESSAGE BUBBLE ───────────────────────────────────────────────────
+function appendMessage(m, scroll = true) {
+  const area   = document.getElementById("messagesArea");
+  const isMe   = m.sender_id === ME.id;
+  const name   = m.sender_name || ME.name;
+  const initials = name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0,2);
+
+  const time = m.time || formatTime(m.created_at || new Date());
+
+  area.innerHTML += `
+    <div class="msg ${isMe ? 'me' : 'them'}">
+      <div class="msg-av">${initials}</div>
+      <div class="bubble">
+        ${escapeHtml(m.message)}
+        <span class="bubble-time">${time}</span>
+      </div>
+    </div>`;
+
+  if (scroll) scrollToBottom();
+}
+
+// ── SEND MESSAGE ──────────────────────────────────────────────────────────────
+function sendMessage() {
+  const input = document.getElementById("chatInput");
+  const text  = input.value.trim();
+  if (!text || !activeChat) return;
+
+  socket.emit("send_message", {
+    request_id:  activeChat.id,
+    sender_id:   ME.id,
+    sender_name: ME.name,
+    message:     text
+  });
+
+  input.value = "";
+  input.style.height = "auto";
+  stopTyping();
+}
+
+// ── TYPING ────────────────────────────────────────────────────────────────────
+function emitTyping() {
+  if (!activeChat) return;
+  if (!isTyping) {
+    isTyping = true;
+    socket.emit("typing", { request_id: activeChat.id, name: ME.name });
+  }
+  clearTimeout(typingTimer);
+  typingTimer = setTimeout(stopTyping, 2000);
+}
+
+function stopTyping() {
+  if (!activeChat || !isTyping) return;
+  isTyping = false;
+  socket.emit("stop_typing", { request_id: activeChat.id });
+}
+
+// ── SOCKET EVENTS ─────────────────────────────────────────────────────────────
+socket.on("receive_message", (data) => {
+  // Only show if we're in that room
+  if (!activeChat || data.request_id !== activeChat.id) return;
+  appendMessage(data, true);
+});
+
+socket.on("typing", (data) => {
+  if (!activeChat) return;
+  document.getElementById("typingWrap").style.display = "flex";
+});
+
+socket.on("stop_typing", () => {
+  document.getElementById("typingWrap").style.display = "none";
+});
+
+// ── UTILS ─────────────────────────────────────────────────────────────────────
+function handleKey(e) {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function autoResize(el) {
+  el.style.height = "auto";
+  el.style.height = Math.min(el.scrollHeight, 100) + "px";
+}
+
+function scrollToBottom() {
+  const area = document.getElementById("messagesArea");
+  setTimeout(() => area.scrollTop = area.scrollHeight, 50);
+}
+
+function formatTime(dateVal) {
+  const d = dateVal ? new Date(dateVal) : new Date();
+  return d.toLocaleTimeString("en-IN", { hour:"2-digit", minute:"2-digit", hour12:true });
+}
+
+function escapeHtml(str) {
+  return (str || "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/\n/g,"<br>");
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+loadChats();
+</script>
+</body>
+</html>
